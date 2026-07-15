@@ -5,6 +5,7 @@ from .symbol import Symbol
 from .function import Function, Parameter
 from .dependency import Dependency
 from .graph import KnowledgeGraph
+from .builder import KnowledgeBuilder
 
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "Parameter",
     "Dependency",
     "KnowledgeGraph",
+    "KnowledgeBuilder",
 
 ]

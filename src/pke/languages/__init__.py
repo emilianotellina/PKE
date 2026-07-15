@@ -6,6 +6,7 @@ from .base import (
 from .registry import LanguageRegistry
 from .manager import LanguageManager
 from .python import PythonLanguagePlugin
+from .analyzer import LanguageAnalyzer
 
 __all__ = [
 
