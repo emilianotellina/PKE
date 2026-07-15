@@ -1,0 +1,14 @@
+project:
+
+  name: test-project
+
+  path: .
+
+
+logging:
+
+  level: DEBUG
+
+plugins:
+
+  enabled: []

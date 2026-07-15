@@ -1,0 +1,17 @@
+project:
+
+  name: pke-project
+
+  path: .
+
+
+logging:
+
+  level: INFO
+
+  file: null
+
+
+plugins:
+
+  enabled: []

@@ -1583,6 +1583,287 @@ EOF
 
 }
 
+write_m100() {
+
+write_file "docs/milestones/M1/M1.0.0-core-framework.md" <<'EOF'
+# M1.0.0 - Core Framework
+
+Status: Planned
+
+Version: 1.0
+
+---
+
+# Obiettivo
+
+Realizzare il nucleo base di Project Knowledge Engine.
+
+Al termine della milestone PKE deve essere in grado di:
+
+- avviarsi;
+- caricare configurazione;
+- gestire plugin;
+- emettere e ricevere eventi;
+- eseguire task;
+- esporre una CLI base;
+- registrare informazioni di sistema.
+
+---
+
+# Scope
+
+Incluso:
+
+- struttura progetto Python;
+- configurazione;
+- logging;
+- dependency injection;
+- plugin manager;
+- event bus;
+- scheduler;
+- CLI;
+- test framework.
+
+Escluso:
+
+- parsing codice;
+- database;
+- AI;
+- REST API.
+
+---
+
+# Struttura progetto
+
+La struttura iniziale:
+
+
+pke/
+
+├── src/
+
+│ └── pke/
+
+│ ├── core/
+
+│ │ ├── config/
+│ │ ├── events/
+│ │ ├── plugins/
+│ │ ├── scheduler/
+│ │ └── logging/
+
+│ ├── cli/
+
+│ ├── models/
+
+│ └── services/
+
+├── tests/
+
+├── plugins/
+
+├── docs/
+
+├── pyproject.toml
+
+└── README.md
+
+
+---
+
+# Componenti
+
+## Config Manager
+
+Responsabilità:
+
+- caricare configurazione YAML;
+- validare parametri;
+- fornire accesso centralizzato.
+
+Esempio:
+
+
+pke.yaml
+
+
+Contiene:
+
+- progetto;
+- database;
+- plugin;
+- logging.
+
+---
+
+# Logging System
+
+Requisiti:
+
+- livelli log;
+- output console;
+- output file;
+- formato strutturato.
+
+Livelli:
+
+- DEBUG
+- INFO
+- WARNING
+- ERROR
+
+
+---
+
+# Plugin Manager
+
+Responsabilità:
+
+- discovery plugin;
+- caricamento;
+- lifecycle.
+
+Lifecycle:
+
+
+DISCOVER
+
+LOAD
+
+INIT
+
+START
+
+STOP
+
+
+---
+
+# Event Bus
+
+Implementazione iniziale:
+
+- sincrona;
+- memoria locale.
+
+Interfaccia:
+
+```python
+publish(event)
+
+subscribe(type, handler)
+Scheduler
+
+Responsabilità:
+
+eseguire task;
+gestire queue;
+preparare future esecuzioni asincrone.
+Dependency Injection
+
+Il core non deve creare direttamente componenti.
+
+Esempio:
+
+Service
+
+  riceve
+
+Repository
+CLI
+
+Comando principale:
+
+pke
+
+Comandi iniziali:
+
+pke version
+
+pke doctor
+
+pke config
+
+pke plugin list
+Doctor Command
+
+Il comando deve verificare:
+
+versione Python;
+dipendenze installate;
+configurazione;
+directory progetto;
+plugin caricabili.
+
+Output:
+
+PKE Doctor
+
+Python       OK
+
+Config       OK
+
+Plugins      OK
+
+Database     N/A
+Modello configurazione
+
+File:
+
+pke.yaml
+
+Esempio:
+
+project:
+  name: example
+  path: .
+
+logging:
+  level: INFO
+
+plugins:
+  enabled: []
+Test
+
+La milestone è completata quando:
+
+Core
+PKE si avvia.
+CLI
+pke version funziona.
+pke doctor funziona.
+Plugin
+un plugin demo viene caricato.
+Event Bus
+un evento viene pubblicato e ricevuto.
+Config
+YAML viene letto e validato.
+Deliverable
+
+Produrre:
+
+repository Python funzionante;
+CLI installabile;
+plugin demo;
+test automatici;
+documentazione.
+Dipendenze
+
+RFC richiesti:
+
+RFC-001 Vision
+RFC-003 Plugin System
+RFC-004 Event Bus
+RFC-010 Versioning
+Success criteria
+
+M1.0.0 è completata quando il core PKE può essere installato
+ed eseguito senza nessun parser o componente AI.
+
+EOF
+
+}
+
 main() {
     
     create_dirs
