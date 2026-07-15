@@ -1,7 +1,6 @@
-from abc import ABC, abstractmethod
+from pke.core.runtime import RuntimeComponent
 
-
-class PKEPlugin(ABC):
+class PKEPlugin(RuntimeComponent):
 
 
     name: str = "unknown"
@@ -10,18 +9,15 @@ class PKEPlugin(ABC):
 
 
 
-    @abstractmethod
     def initialize(self):
         pass
 
 
 
-    @abstractmethod
     def start(self):
         pass
 
 
 
-    @abstractmethod
     def stop(self):
         pass
