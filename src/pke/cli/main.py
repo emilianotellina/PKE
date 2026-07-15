@@ -6,6 +6,8 @@ from pke.core.config import ConfigManager
 
 from pke.core.logging import LoggingManager
 
+from pke.core.plugins import PluginManager
+
 
 
 def main():
@@ -40,6 +42,22 @@ def main():
         return
 
 
+    if args.command == "plugin":
+
+        manager = PluginManager()
+
+        print(
+            "Installed plugins:"
+        )
+
+        for plugin in manager.registry.all():
+
+            print(
+                plugin.name,
+                plugin.version
+            )
+
+    return
 
     logging = LoggingManager()
 
