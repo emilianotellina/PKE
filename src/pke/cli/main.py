@@ -60,8 +60,30 @@ def main():
 
     if args.command == "scan":
         scanner = ProjectScanner()
-        files = scanner.scan(args.path)
-        print(f"Found {len(files)} files")
+        project = scanner.scan(
+            args.path
+        )
+
+
+        print(
+            f"Project: {project.name}"
+        )
+
+
+        print(
+            f"Packages: {len(project.packages)}"
+        )
+
+
+        files = sum(
+            len(p.files)
+            for p in project.packages
+        )
+
+
+        print(
+            f"Files: {files}"
+        )
         return
 
     logging = LoggingManager()

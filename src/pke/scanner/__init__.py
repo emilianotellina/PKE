@@ -1,7 +1,8 @@
 from .scanner import ProjectScanner
-from .models import ProjectFile
+from .detector import LanguageDetector
+
 
 __all__ = [
     "ProjectScanner",
-    "ProjectFile",
+    "LanguageDetector",
 ]
