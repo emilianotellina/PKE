@@ -1,12 +1,10 @@
 import argparse
 
 from pke.version import VERSION
-
 from pke.core.config import ConfigManager
-
 from pke.core.logging import LoggingManager
-
 from pke.core.plugins import PluginManager
+from pke.scanner import ProjectScanner
 
 
 
@@ -28,6 +26,12 @@ def main():
         nargs="?"
     )
 
+    parser.add_argument(
+       "path",
+        nargs="?",
+        default="."
+    )
+
 
     args = parser.parse_args()
 
@@ -43,24 +47,24 @@ def main():
 
 
     if args.command == "plugin":
-
         manager = PluginManager()
-
         print(
             "Installed plugins:"
         )
-
         for plugin in manager.registry.all():
-
             print(
                 plugin.name,
                 plugin.version
             )
+        return
 
-    return
+    if args.command == "scan":
+        scanner = ProjectScanner()
+        files = scanner.scan(args.path)
+        print(f"Found {len(files)} files")
+        return
 
     logging = LoggingManager()
-
     logging.setup()
 
 
