@@ -1864,6 +1864,557 @@ EOF
 
 }
 
+write_rfc011() {
+
+write_file "docs/rfc/RFC-011-runtime-architecture.md" <<'EOF'
+# RFC-011 - Runtime Architecture
+
+Status: Accepted
+
+Version: 1.0
+
+---
+
+# Obiettivo
+
+Definire il runtime centrale di PKE.
+
+Il Runtime è il componente responsabile del ciclo di vita
+dell'applicazione e dei componenti interni.
+
+---
+
+# Motivazione
+
+PKE sarà composto da molti moduli indipendenti:
+
+- scanner;
+- parser;
+- storage;
+- AI provider;
+- knowledge generator;
+- API.
+
+Ogni componente deve poter essere caricato, avviato e fermato
+senza creare dipendenze rigide.
+
+---
+
+# Architettura
+
+             Runtime
+
+                |
+
+ +--------------+--------------+
+
+ |              |              |
+
+Service Event Bus Lifecycle
+
+Container
+
+                |
+
+          Components
+
+                |
+
+           Plugins
+
+---
+
+# Runtime Responsibilities
+
+Il Runtime gestisce:
+
+- configurazione;
+- servizi;
+- eventi;
+- componenti;
+- lifecycle;
+- stato applicazione.
+
+Il Runtime non deve contenere logica di business.
+
+---
+
+# Component Model
+
+Ogni componente PKE implementa:
+
+```python
+configure(runtime)
+
+initialize()
+
+start()
+
+stop()
+
+destroy()
+Lifecycle
+
+Gli stati possibili:
+
+CREATED
+
+ |
+
+INITIALIZED
+
+ |
+
+STARTED
+
+ |
+
+STOPPING
+
+ |
+
+STOPPED
+Service Container
+
+Il Runtime espone un container per la gestione dei servizi.
+
+API:
+
+register()
+
+resolve()
+
+exists()
+
+unregister()
+Event Bus
+
+Tutti i componenti comunicano tramite eventi.
+
+API:
+
+publish(event)
+
+subscribe(type, handler)
+
+unsubscribe(type, handler)
+Component Registry
+
+Il Runtime mantiene il registro dei componenti attivi.
+
+Utilizzato per:
+
+discovery;
+lifecycle;
+diagnostica.
+Bootstrap
+
+L'avvio segue questo ordine:
+
+Load Configuration
+
+        |
+
+Initialize Logging
+
+        |
+
+Create Runtime
+
+        |
+
+Register Services
+
+        |
+
+Load Plugins
+
+        |
+
+Start Components
+Principi architetturali
+Nessun singleton globale
+
+Tutti i servizi passano dal Runtime.
+
+Nessuna dipendenza concreta
+
+I componenti devono dipendere da interfacce.
+
+Estensibilità
+
+Nuovi moduli devono essere aggiungibili come componenti.
+
+Evoluzioni future
+
+Possibili estensioni:
+
+runtime distribuito;
+componenti remoti;
+hot reload;
+dependency graph;
+startup parallelo.
+
+EOF
+
+}
+
+write_rfc012() {
+
+write_file "docs/rfc/RFC-012-knowledge-model.md" <<'EOF'
+# RFC-012 - Knowledge Model
+
+Status: Draft
+
+Version: 1.0
+
+---
+
+# Obiettivo
+
+Definire il modello dati comune utilizzato da tutti i componenti
+di analisi del codice.
+
+---
+
+# Principio
+
+Il Knowledge Model è indipendente dal linguaggio.
+
+Un parser Java, Python o Rust deve produrre lo stesso modello.
+
+---
+
+# Pipeline
+
+
+Source Code
+
+ |
+
+Language Plugin
+
+ |
+
+Knowledge Model
+
+ |
+
+Knowledge Producers
+
+ |
+
+Knowledge Storage
+
+
+---
+
+# Entità principali
+
+## Project
+
+Rappresenta un progetto software.
+
+Campi:
+
+
+id
+
+name
+
+path
+
+language
+
+version
+
+
+---
+
+## Package
+
+Rappresenta un contenitore logico.
+
+Esempio:
+
+
+com.company.service
+
+
+Campi:
+
+
+id
+
+name
+
+path
+
+description
+
+files[]
+
+
+---
+
+## File
+
+Rappresenta un file sorgente.
+
+Campi:
+
+
+id
+
+path
+
+language
+
+hash
+
+package
+
+imports[]
+
+
+---
+
+## Symbol
+
+Entità generica del codice.
+
+Tipi:
+
+
+CLASS
+
+FUNCTION
+
+METHOD
+
+VARIABLE
+
+CONSTANT
+
+
+Campi:
+
+
+name
+
+type
+
+visibility
+
+location
+
+documentation
+
+
+---
+
+## Class
+
+Campi:
+
+
+name
+
+package
+
+extends
+
+implements
+
+methods[]
+
+fields[]
+
+
+---
+
+## Function / Method
+
+Campi:
+
+
+name
+
+signature
+
+parameters[]
+
+return_type
+
+visibility
+
+complexity
+
+calls[]
+
+called_by[]
+
+
+---
+
+## Parameter
+
+Campi:
+
+
+name
+
+type
+
+default_value
+
+
+---
+
+## Dependency
+
+Rappresenta una relazione.
+
+Tipi:
+
+
+IMPORT
+
+CALL
+
+EXTEND
+
+IMPLEMENT
+
+REFERENCE
+
+
+---
+
+# Knowledge Graph
+
+Il modello viene rappresentato come un grafo.
+
+Esempio:
+
+
+Package
+
+|
+
+contains
+
+|
+
+File
+
+|
+
+contains
+
+|
+
+Class
+
+|
+
+contains
+
+|
+
+Method
+
+
+---
+
+# Relazioni
+
+Principali:
+
+
+Project
+|
++-- Package
+|
++-- File
+|
++-- Symbol
+
+Symbol
+|
++-- calls
+|
++-- depends_on
+
+
+---
+
+# Language Independence
+
+I plugin linguaggio devono trasformare:
+
+
+AST specifico
+
+
+in:
+
+
+Knowledge Model
+
+
+---
+
+# Knowledge Producer
+
+I producer generano rappresentazioni diverse.
+
+Esempi:
+
+
+Knowledge Model
+
+   |
+
+   +--> PACKAGE.md
+
+   +--> FILE.md
+
+   +--> FUNCTION.md
+
+   +--> Embeddings
+
+   +--> Context
+
+---
+
+# Versioning
+
+Il modello deve essere versionato.
+
+Esempio:
+
+```yaml
+knowledge_schema: 1
+
+Modifiche incompatibili richiedono:
+
+nuovo schema;
+migration;
+RFC.
+Obiettivi futuri
+
+Il Knowledge Model permetterà:
+
+ricerca semantica;
+generazione automatica documentazione;
+context building;
+AI coding assistant.
+
+EOF
+
+}
+
 main() {
     
     create_dirs
@@ -1880,6 +2431,8 @@ main() {
     write_rfc008
     write_rfc009
     write_rfc010
+    write_rfc011
+    write_rfc012
 
     echo "PKE M0 documentation generated."
 }
