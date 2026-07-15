@@ -4,18 +4,17 @@ from .base import (
 )
 
 from .registry import LanguageRegistry
-
 from .manager import LanguageManager
-
+from .python import PythonLanguagePlugin
 
 __all__ = [
 
     "LanguagePlugin",
-
     "ParseResult",
-
     "LanguageRegistry",
-
     "LanguageManager",
-
 ]
+
+__all__.append(
+    "PythonLanguagePlugin"
+)
