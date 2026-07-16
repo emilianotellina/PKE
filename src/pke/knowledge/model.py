@@ -35,6 +35,8 @@ class KnowledgeFile:
         default_factory=list
     )
 
+    description: str = ""
+
 
 
 @dataclass
@@ -45,3 +47,12 @@ class KnowledgeFunction:
     signature: str
 
     pseudocode: str
+
+@dataclass
+class KnowledgeProject:
+
+    name: str
+
+    packages: list = field(
+        default_factory=list
+    )

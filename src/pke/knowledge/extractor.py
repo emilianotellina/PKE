@@ -93,3 +93,24 @@ class KnowledgeExtractor:
         return "\n".join(
             lines
         )
+    def extract_package(
+        self,
+        name,
+        path
+    ):
+
+        return KnowledgePackage(
+            name=name,
+            path=path
+        )
+
+    def extract_file(
+        self,
+        name,
+        path
+    ):
+
+        return KnowledgeFile(
+            name=name,
+            path=path
+        )
