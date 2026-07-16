@@ -30,6 +30,17 @@ from .variable import (
     ParameterNode
 )
 from .import_node import ImportNode
+from .expression import (
+    ExpressionNode,
+    IdentifierNode,
+    LiteralNode,
+    BinaryOperationNode,
+    CallNode,
+    AssignmentNode,
+    AttributeAccessNode,
+    IndexAccessNode,
+    AwaitNode,
+)
 
 
 __all__ = [
@@ -56,4 +67,13 @@ __all__ = [
     "BreakNode",
     "ContinueNode",
     "ThrowNode",
+    "ExpressionNode",
+    "IdentifierNode",
+    "LiteralNode",
+    "BinaryOperationNode",
+    "CallNode",
+    "AssignmentNode",
+    "AttributeAccessNode",
+    "IndexAccessNode",
+    "AwaitNode",
 ]
