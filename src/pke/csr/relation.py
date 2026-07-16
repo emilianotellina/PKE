@@ -50,3 +50,11 @@ class RelationType(str, Enum):
     KEY = "KEY"
 
     ELEMENT = "ELEMENT"
+
+    PROJECT = "PROJECT"
+
+    PACKAGE = "PACKAGE"
+
+    FILE = "FILE"
+
+    FUNCTION = "FUNCTION"

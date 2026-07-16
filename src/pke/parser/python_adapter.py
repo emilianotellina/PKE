@@ -1,6 +1,7 @@
 import ast
 
 from pke.csr import CSRBuilder
+from pathlib import Path
 
 from pke.csr.relation import RelationType
 
@@ -29,9 +30,25 @@ class PythonAdapter:
             source
         )
 
-        self.visit(
-            tree
+
+        self.builder.begin_project(
+            "python_project"
         )
+
+
+        self.builder.begin_package(
+            "root"
+        )
+
+
+        self.builder.begin_file(
+            "module.py"
+        )
+
+        
+        self.builder.end_source_context()
+        self.builder.end_source_context()
+        self.builder.end_source_context()
 
         return self.builder.graph
 
@@ -76,6 +93,13 @@ class PythonAdapter:
             node.name
         )
 
+        current_file = self.builder.parent_context()
+
+        self.builder.graph.link(
+            current_file,
+            function,
+            RelationType.FUNCTION
+        )
 
         for argument in node.args.args:
 

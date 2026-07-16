@@ -47,6 +47,11 @@ from .control_flow import (
     WhileNode,
     TryNode,
 )
+from .source import (
+    ProjectNode,
+    PackageNode,
+    FileNode,
+)
 
 
 __all__ = [
@@ -86,4 +91,7 @@ __all__ = [
     "ForNode",
     "WhileNode",
     "TryNode",
+    "ProjectNode",
+    "PackageNode",
+    "FileNode",
 ]

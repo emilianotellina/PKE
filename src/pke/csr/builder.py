@@ -20,7 +20,9 @@ from .nodes import (
     BinaryOperationNode,
     CallNode,
     AssignmentNode,
-
+    ProjectNode,
+    PackageNode,
+    FileNode,
 
 )
 
@@ -478,3 +480,95 @@ class CSRBuilder:
 
 
         return node
+
+    def begin_project(
+        self,
+        name
+    ):
+
+        node = ProjectNode(
+            name
+        )
+
+
+        self.add_node(
+            node
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node
+
+    def begin_package(
+        self,
+        name
+    ):
+
+        node = PackageNode(
+            name
+        )
+
+
+        self.add_node(
+            node
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            node,
+            RelationType.PACKAGE
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node
+
+    def begin_file(
+        self,
+        name
+    ):
+
+        node = FileNode(
+            name
+        )
+
+
+        self.add_node(
+            node
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            node,
+            RelationType.FILE
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node
+
+    def end_source_context(
+    self
+    ):
+
+        self.pop_context()
