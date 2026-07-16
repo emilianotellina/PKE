@@ -16,17 +16,3 @@ class CSRNode:
     attributes: dict = field(
         default_factory=dict
     )
-
-    children: list = field(
-        default_factory=list
-    )
-
-
-    def add_child(
-        self,
-        node
-    ):
-
-        self.children.append(
-            node
-        )

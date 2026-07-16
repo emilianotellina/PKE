@@ -50,7 +50,7 @@ def test_graph_find_node():
 
 
     result = graph.find(
-        "core"
+        name="core"
     )
 
 

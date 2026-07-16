@@ -1,3 +1,5 @@
+from pke.csr.relation import RelationType
+
 from pke.csr import (
     CSRGraph,
     ProjectNode,
@@ -25,14 +27,14 @@ def test_create_relation():
     graph.add(package)
 
 
-    edge = graph.connect(
+    edge = graph.link(
         project,
         package,
-        "CONTAINS"
+        RelationType.CONTAINS
     )
 
 
-    assert edge.relation == "CONTAINS"
+    assert edge.relation == RelationType.CONTAINS
 
     assert edge.source == project.id
 
@@ -60,20 +62,21 @@ def test_find_outgoing_relation():
     graph.add(package)
 
 
-    graph.connect(
+    graph.link(
         project,
         package,
-        "CONTAINS"
+        RelationType.CONTAINS
     )
 
 
-    edges = graph.outgoing(
+    children = graph.children(
         project,
-        "CONTAINS"
+        RelationType.CONTAINS
     )
 
+    assert len(children) == 1
 
-    assert len(edges) == 1
+    assert children[0].name == "core"
 
 
 
@@ -97,17 +100,18 @@ def test_find_incoming_relation():
     graph.add(package)
 
 
-    graph.connect(
+    graph.link(
         project,
         package,
-        "CONTAINS"
+        RelationType.CONTAINS
     )
 
 
-    edges = graph.incoming(
+    parents = graph.parents(
         package,
-        "CONTAINS"
+        RelationType.CONTAINS
     )
 
+    assert len(parents) == 1
 
-    assert len(edges) == 1
+    assert parents[0].name == "demo"

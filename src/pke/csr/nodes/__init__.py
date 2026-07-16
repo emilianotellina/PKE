@@ -46,7 +46,7 @@ __all__ = [
     "BodyNode",
     "StatementNode",
     "ExpressionNode",
-    "BlockNode".
+    "BlockNode",
     "ControlFlowNode",
     "IfNode",
     "LoopNode",

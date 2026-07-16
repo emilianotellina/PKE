@@ -1,4 +1,5 @@
 from .statement import StatementNode
+from .block import BlockNode
 
 
 class ControlFlowNode(StatementNode):

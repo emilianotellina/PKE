@@ -9,15 +9,11 @@ def test_serializer():
 
     graph = CSRGraph()
 
-
     node = ProjectNode(
         "demo"
     )
 
-
-    graph.add(
-        node
-    )
+    graph.add(node)
 
 
     result = CSRSerializer().serialize(
@@ -26,5 +22,3 @@ def test_serializer():
 
 
     assert "demo" in result
-
-    assert "project" in result

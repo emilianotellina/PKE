@@ -2,7 +2,10 @@ from pke.csr import (
     FunctionNode,
     BodyNode,
     StatementNode,
+    CSRGraph
 )
+
+from pke.csr.relation import RelationType
 
 
 def test_function_body():
@@ -11,7 +14,6 @@ def test_function_body():
         "login"
     )
 
-
     body = BodyNode()
 
     stmt = StatementNode(
@@ -19,18 +21,36 @@ def test_function_body():
     )
 
 
-    body.add_statement(
-        stmt
+    graph = CSRGraph()
+
+
+    graph.add(fn)
+
+    graph.add(body)
+
+    graph.add(stmt)
+
+
+    graph.link(
+        fn,
+        body,
+        RelationType.BODY
     )
 
 
-    fn.set_body(
-        body
+    graph.link(
+        body,
+        stmt,
+        RelationType.CONTAINS
     )
 
 
-    assert fn.body is body
+    result = graph.children(
+        body,
+        RelationType.CONTAINS
+    )
 
-    assert len(fn.body.children) == 1
 
-    assert fn.body.children[0].type == "return"
+    assert len(result) == 1
+
+    assert result[0].type == "return"

@@ -9,13 +9,3 @@ class BodyNode(CSRNode):
             type="body",
             name="body"
         )
-
-
-    def add_statement(
-        self,
-        statement
-    ):
-
-        self.children.append(
-            statement
-        )
