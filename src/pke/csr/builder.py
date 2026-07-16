@@ -9,6 +9,13 @@ from .nodes import (
     BlockNode,
     ReturnNode,
 )
+from .nodes import (
+    IdentifierNode,
+    LiteralNode,
+    BinaryOperationNode,
+    CallNode,
+    AssignmentNode,
+)
 
 
 class CSRBuilder:
@@ -30,7 +37,135 @@ class CSRBuilder:
 
         return node
 
+    def add_expression_node(
+        self,
+        node
+    ):
 
+        self.graph.add(node)
+
+        return node
+
+    def identifier(
+        self,
+        name
+    ):
+
+        node = IdentifierNode(
+            name
+        )
+
+        return self.add_expression_node(
+            node
+        )
+
+    def literal(
+        self,
+        value
+    ):
+
+        node = LiteralNode(
+            value
+        )
+
+        return self.add_expression_node(
+            node
+        )
+
+    def binary(
+        self,
+        operator,
+        left,
+        right
+    ):
+
+        node = BinaryOperationNode(
+            operator
+        )
+
+
+        self.add_expression_node(
+            node
+        )
+
+
+        self.graph.link(
+            node,
+            left,
+            RelationType.LEFT
+        )
+
+
+        self.graph.link(
+            node,
+            right,
+            RelationType.RIGHT
+        )
+
+
+        return node
+
+    def call(
+        self,
+        target,
+        arguments=None
+    ):
+
+        node = CallNode()
+
+
+        self.add_expression_node(
+            node
+        )
+
+
+        self.graph.link(
+            node,
+            target,
+            RelationType.TARGET
+        )
+
+
+        for argument in arguments or []:
+
+            self.graph.link(
+                node,
+                argument,
+                RelationType.ARGUMENT
+            )
+
+
+        return node
+
+    def assignment(
+        self,
+        left,
+        right
+    ):
+
+        node = AssignmentNode()
+
+
+        self.add_expression_node(
+            node
+        )
+
+
+        self.graph.link(
+            node,
+            left,
+            RelationType.LEFT
+        )
+
+
+        self.graph.link(
+            node,
+            right,
+            RelationType.RIGHT
+        )
+
+
+        return node
 
     def link(
         self,
