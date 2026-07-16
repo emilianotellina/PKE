@@ -32,14 +32,22 @@ class MarkdownWriter:
         )
 
 
+        content = f"""
+        # Function: {function.name}
+
+        ## Signature
+
+        {function.signature}
+
+        ## Pseudocode
+
+
+        {function.pseudocode}
+
+        """
+
+
         path.write_text(
-f"""
-# Function: {function.name}
-
-
-## Signature
-
-{function.signature}
-
-
-## Pseudocode
+            content
+        )
+        
