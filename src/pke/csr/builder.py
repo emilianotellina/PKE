@@ -1,5 +1,6 @@
 from .graph import CSRGraph
 from .relation import RelationType
+from .builder_context import BuilderContext
 
 from .nodes import (
     FunctionNode,
@@ -17,7 +18,7 @@ class CSRBuilder:
 
         self.graph = CSRGraph()
 
-        self.stack = []
+        self.context_stack = []
 
 
     def add_node(
@@ -72,14 +73,9 @@ class CSRBuilder:
         )
 
 
-        self.stack.append(
-            function
-        )
+        self.push_context(function)
 
-
-        self.stack.append(
-            body
-        )
+        self.push_context(body)
 
 
         return function
@@ -129,7 +125,7 @@ class CSRBuilder:
         )
 
 
-        body = self.stack[-1]
+        body = self.current_context()
 
 
         self.link(
@@ -144,7 +140,29 @@ class CSRBuilder:
 
 
     def end_function(self):
+        self.pop_context()
+        self.pop_context()
+    
+    def current_context(self):
 
-        self.stack.pop()
+        if not self.context_stack:
+            return None
 
-        self.stack.pop()
+        return self.context_stack[-1].node
+
+    def push_context(
+        self,
+        node
+    ):
+
+        self.context_stack.append(
+            BuilderContext(
+                node,
+                node.type
+            )
+        )
+
+
+    def pop_context(self):
+
+        return self.context_stack.pop()
