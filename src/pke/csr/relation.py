@@ -49,6 +49,4 @@ class RelationType(str, Enum):
 
     KEY = "KEY"
 
-    VALUE = "VALUE"
-
     ELEMENT = "ELEMENT"

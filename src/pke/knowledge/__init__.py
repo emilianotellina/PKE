@@ -9,6 +9,8 @@ from .builder import KnowledgeBuilder
 from .writer import KnowledgeWriter
 from .generator import KnowledgeGenerator
 from .pipeline import KnowledgePipeline
+from .extractor import KnowledgeExtractor
+from .writers import MarkdownWriter
 from .producers import (
     KnowledgeProducer,
     PackageProducer,
@@ -35,5 +37,7 @@ __all__ = [
     "KnowledgeWriter",
     "KnowledgeGenerator",
     "KnowledgePipeline",
+    "KnowledgeExtractor",
+    "MarkdownWriter",
 
 ]
