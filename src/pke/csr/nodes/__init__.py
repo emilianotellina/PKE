@@ -2,6 +2,10 @@ from .project import ProjectNode
 from .package import PackageNode
 from .file import FileNode
 from .symbol import SymbolNode
+from .body import BodyNode
+from .statement import StatementNode
+from .expression import ExpressionNode
+from .executable import ExecutableNode
 
 from .function import FunctionNode
 from .class_node import ClassNode
@@ -22,4 +26,8 @@ __all__ = [
     "VariableNode",
     "ParameterNode",
     "ImportNode",
+    "ExecutableNode",
+    "BodyNode",
+    "StatementNode",
+    "ExpressionNode",
 ]

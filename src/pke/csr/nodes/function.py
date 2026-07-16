@@ -1,7 +1,8 @@
-from .declaration import DeclarationNode
+from .executable import ExecutableNode
 
 
-class FunctionNode(DeclarationNode):
+
+class FunctionNode(ExecutableNode):
 
     def __init__(
         self,
