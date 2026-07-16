@@ -99,7 +99,7 @@ class CSRBuilder:
         )
 
 
-        function = self.stack[-2]
+        function = self.parent_context()
 
 
         self.link(
@@ -149,6 +149,13 @@ class CSRBuilder:
             return None
 
         return self.context_stack[-1].node
+    
+    def parent_context(self):
+
+        if len(self.context_stack) < 2:
+            return None
+
+        return self.context_stack[-2].node
 
     def push_context(
         self,
