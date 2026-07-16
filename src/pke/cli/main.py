@@ -5,7 +5,18 @@ from pke.core.config import ConfigManager
 from pke.core.logging import LoggingManager
 from pke.core.plugins import PluginManager
 from pke.scanner import ProjectScanner
+from pke.scanner import ProjectScanner
+from pke.knowledge import KnowledgeGenerator
+from pke.languages import (
+    LanguageManager,
+    create_default_registry
+)
 
+from pke.languages import LanguageAnalyzer
+
+from pke.knowledge import (
+    KnowledgePipeline
+)
 
 
 def main():
@@ -31,6 +42,8 @@ def main():
         nargs="?",
         default="."
     )
+
+    
 
 
     args = parser.parse_args()
@@ -84,6 +97,52 @@ def main():
         print(
             f"Files: {files}"
         )
+        return
+
+
+    if args.command == "generate":
+
+        scanner = ProjectScanner()
+
+
+        project = scanner.scan(
+            args.path
+        )
+
+
+        registry = create_default_registry()
+
+
+        manager = LanguageManager(
+            registry
+        )
+
+
+        analyzer = LanguageAnalyzer(
+            manager
+        )
+
+
+        generator = KnowledgeGenerator(
+            "knowledge"
+        )
+
+
+        pipeline = KnowledgePipeline(
+            analyzer,
+            generator
+        )
+
+
+        pipeline.execute(
+            project
+        )
+
+
+        print(
+            "Knowledge generated"
+        )
+
         return
 
     logging = LoggingManager()

@@ -7,6 +7,7 @@ from .registry import LanguageRegistry
 from .manager import LanguageManager
 from .python import PythonLanguagePlugin
 from .analyzer import LanguageAnalyzer
+from .defaults import create_default_registry
 
 __all__ = [
 
@@ -14,8 +15,7 @@ __all__ = [
     "ParseResult",
     "LanguageRegistry",
     "LanguageManager",
+    "create_default_registry",
+    "PythonLanguagePlugin"
 ]
 
-__all__.append(
-    "PythonLanguagePlugin"
-)
