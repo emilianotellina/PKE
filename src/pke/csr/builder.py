@@ -8,23 +8,21 @@ from .nodes import (
     BodyNode,
     BlockNode,
     ReturnNode,
-)
-from .nodes import (
-    IdentifierNode,
-    LiteralNode,
-    BinaryOperationNode,
-    CallNode,
-    AssignmentNode,
-)
-
-from .nodes import (
     IfNode,
     ForNode,
     WhileNode,
     TryNode,
     BlockNode,
-)
+    AttributeAccessNode,
+    IndexAccessNode,
+    IdentifierNode,
+    LiteralNode,
+    BinaryOperationNode,
+    CallNode,
+    AssignmentNode,
 
+
+)
 
 class CSRBuilder:
 
@@ -421,6 +419,61 @@ class CSRBuilder:
 
         self.push_context(
             node
+        )
+
+
+        return node
+
+    def attribute(
+        self,
+        obj,
+        name
+    ):
+
+        node = AttributeAccessNode(
+            name
+        )
+
+
+        self.add_expression_node(
+            node
+        )
+
+
+        self.graph.link(
+            node,
+            obj,
+            RelationType.OBJECT
+        )
+
+
+        return node
+
+    def index(
+        self,
+        target,
+        index
+    ):
+
+        node = IndexAccessNode()
+
+
+        self.add_expression_node(
+            node
+        )
+
+
+        self.graph.link(
+            node,
+            target,
+            RelationType.TARGET
+        )
+
+
+        self.graph.link(
+            node,
+            index,
+            RelationType.INDEX
         )
 
 

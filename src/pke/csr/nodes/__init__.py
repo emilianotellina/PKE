@@ -41,6 +41,12 @@ from .expression import (
     IndexAccessNode,
     AwaitNode,
 )
+from .control_flow import (
+    IfNode,
+    ForNode,
+    WhileNode,
+    TryNode,
+)
 
 
 __all__ = [
@@ -76,4 +82,8 @@ __all__ = [
     "AttributeAccessNode",
     "IndexAccessNode",
     "AwaitNode",
+    "IfNode",
+    "ForNode",
+    "WhileNode",
+    "TryNode",
 ]

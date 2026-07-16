@@ -258,3 +258,120 @@ class PythonAdapter:
 
 
         self.builder.pop_context()
+
+    def visit_BinOp(
+        self,
+        node
+    ):
+
+        left = self.visit(
+            node.left
+        )
+
+
+        right = self.visit(
+            node.right
+        )
+
+
+        operator = type(
+            node.op
+        ).__name__
+
+
+        return self.builder.binary(
+            operator,
+            left,
+            right
+        )
+
+    def visit_Compare(
+        self,
+        node
+    ):
+
+        left = self.visit(
+            node.left
+        )
+
+
+        right = self.visit(
+            node.comparators[0]
+        )
+
+
+        operator = type(
+            node.ops[0]
+        ).__name__
+
+
+        return self.builder.binary(
+            operator,
+            left,
+            right
+        )
+
+    def visit_BoolOp(
+        self,
+        node
+    ):
+
+        values = [
+            self.visit(v)
+            for v in node.values
+        ]
+
+
+        result = values[0]
+
+
+        operator = type(
+            node.op
+        ).__name__
+
+
+        for value in values[1:]:
+
+            result = self.builder.binary(
+                operator,
+                result,
+                value
+            )
+
+
+        return result
+
+    def visit_Attribute(
+        self,
+        node
+    ):
+
+        value = self.visit(
+            node.value
+        )
+
+
+        return self.builder.attribute(
+            value,
+            node.attr
+        )
+
+    def visit_Subscript(
+        self,
+        node
+    ):
+
+        target = self.visit(
+            node.value
+        )
+
+
+        index = self.visit(
+            node.slice
+        )
+
+
+        return self.builder.index(
+            target,
+            index
+        )

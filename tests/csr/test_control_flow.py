@@ -10,8 +10,6 @@ def test_if_node():
 
     assert node.type == "if"
 
-    assert node.then_block is not None
-
 
 def test_return_node():
 

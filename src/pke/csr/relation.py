@@ -42,3 +42,13 @@ class RelationType(str, Enum):
     EXCEPTION = "EXCEPTION"
 
     FINALLY = "FINALLY"
+
+    OBJECT = "OBJECT"
+
+    INDEX = "INDEX"
+
+    KEY = "KEY"
+
+    VALUE = "VALUE"
+
+    ELEMENT = "ELEMENT"
