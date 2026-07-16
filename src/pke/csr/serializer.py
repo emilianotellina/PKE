@@ -6,16 +6,26 @@ class CSRSerializer:
 
     def serialize(
         self,
-        node
+        graph
     ):
 
         return json.dumps(
-            self._convert(node),
+            {
+                "nodes": [
+                    self._node(n)
+                    for n in graph.nodes.values()
+                ],
+                "edges": [
+                    self._edge(e)
+                    for e in graph.edges
+                ]
+            },
             indent=2
         )
 
 
-    def _convert(
+
+    def _node(
         self,
         node
     ):
@@ -24,9 +34,20 @@ class CSRSerializer:
             "id": node.id,
             "type": node.type,
             "name": node.name,
-            "attributes": node.attributes,
-            "children": [
-                self._convert(c)
-                for c in node.children
-            ]
+            "attributes": node.attributes
+        }
+
+
+
+    def _edge(
+        self,
+        edge
+    ):
+
+        return {
+            "id": edge.id,
+            "source": edge.source,
+            "target": edge.target,
+            "relation": edge.relation,
+            "attributes": edge.attributes
         }

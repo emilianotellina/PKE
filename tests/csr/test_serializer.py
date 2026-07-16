@@ -1,4 +1,5 @@
 from pke.csr import (
+    CSRGraph,
     ProjectNode,
     CSRSerializer
 )
@@ -6,13 +7,21 @@ from pke.csr import (
 
 def test_serializer():
 
+    graph = CSRGraph()
+
+
     node = ProjectNode(
         "demo"
     )
 
 
-    result = CSRSerializer().serialize(
+    graph.add(
         node
+    )
+
+
+    result = CSRSerializer().serialize(
+        graph
     )
 
 
