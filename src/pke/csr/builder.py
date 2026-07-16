@@ -17,6 +17,14 @@ from .nodes import (
     AssignmentNode,
 )
 
+from .nodes import (
+    IfNode,
+    ForNode,
+    WhileNode,
+    TryNode,
+    BlockNode,
+)
+
 
 class CSRBuilder:
 
@@ -308,3 +316,112 @@ class CSRBuilder:
     def pop_context(self):
 
         return self.context_stack.pop()
+
+    def begin_block(
+        self
+    ):
+
+        block = BlockNode()
+
+        self.add_node(
+            block
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            block,
+            RelationType.BODY
+        )
+
+
+        self.push_context(
+            block
+        )
+
+
+        return block
+
+
+    def end_block(
+        self
+    ):
+
+        self.pop_context()
+
+    def begin_if(
+        self,
+        condition
+    ):
+
+        node = IfNode()
+
+
+        self.add_node(
+            node
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            node,
+            RelationType.CONTAINS
+        )
+
+
+        self.graph.link(
+            node,
+            condition,
+            RelationType.CONDITION
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node
+
+    def begin_for(
+        self,
+        iterable
+    ):
+
+        node = ForNode()
+
+
+        self.add_node(
+            node
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            node,
+            RelationType.CONTAINS
+        )
+
+
+        self.link(
+            node,
+            iterable,
+            RelationType.ITERABLE
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node

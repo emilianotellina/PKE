@@ -36,3 +36,9 @@ class RelationType(str, Enum):
     NEXT = "NEXT"
 
     PREVIOUS = "PREVIOUS"
+
+    ITERABLE = "ITERABLE"
+
+    EXCEPTION = "EXCEPTION"
+
+    FINALLY = "FINALLY"

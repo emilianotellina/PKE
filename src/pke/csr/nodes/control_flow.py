@@ -2,6 +2,7 @@ from .statement import StatementNode
 from .block import BlockNode
 
 
+
 class ControlFlowNode(StatementNode):
 
     def __init__(self, node_type):
@@ -41,3 +42,38 @@ class TryNode(ControlFlowNode):
         self.catch_blocks = []
 
         self.finally_block = None
+
+class IfNode(StatementNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "if"
+        )
+
+
+class ForNode(StatementNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "for"
+        )
+
+
+class WhileNode(StatementNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "while"
+        )
+
+
+class TryNode(StatementNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "try"
+        )

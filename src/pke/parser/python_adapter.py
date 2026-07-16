@@ -4,6 +4,7 @@ from pke.csr import CSRBuilder
 
 from pke.csr.relation import RelationType
 
+
 from pke.csr.nodes import (
     FunctionNode,
     ReturnNode,
@@ -188,3 +189,72 @@ class PythonAdapter:
 
 
         return assignment
+
+    def visit_If(
+        self,
+        node
+    ):
+
+        condition = self.visit(
+            node.test
+        )
+
+
+        self.builder.begin_if(
+            condition
+        )
+
+
+        self.builder.begin_block()
+
+
+        for statement in node.body:
+
+            self.visit(statement)
+
+
+        self.builder.end_block()
+
+
+        if node.orelse:
+
+            self.builder.begin_block()
+
+
+            for statement in node.orelse:
+
+                self.visit(statement)
+
+
+            self.builder.end_block()
+
+
+        self.builder.pop_context()
+
+    def visit_For(
+        self,
+        node
+    ):
+
+        iterable = self.visit(
+            node.iter
+        )
+
+
+        self.builder.begin_for(
+            iterable
+        )
+
+
+        self.builder.begin_block()
+
+
+        for statement in node.body:
+
+            self.visit(statement)
+
+
+        self.builder.end_block()
+
+
+        self.builder.pop_context()
