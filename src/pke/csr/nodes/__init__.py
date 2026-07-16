@@ -6,6 +6,22 @@ from .body import BodyNode
 from .statement import StatementNode
 from .expression import ExpressionNode
 from .executable import ExecutableNode
+from .block import BlockNode
+
+from .control_flow import (
+    ControlFlowNode,
+    IfNode,
+    LoopNode,
+    TryNode,
+)
+
+from .transfer import (
+    TransferNode,
+    ReturnNode,
+    BreakNode,
+    ContinueNode,
+    ThrowNode,
+)
 
 from .function import FunctionNode
 from .class_node import ClassNode
@@ -30,4 +46,14 @@ __all__ = [
     "BodyNode",
     "StatementNode",
     "ExpressionNode",
+    "BlockNode".
+    "ControlFlowNode",
+    "IfNode",
+    "LoopNode",
+    "TryNode",
+    "TransferNode",
+    "ReturnNode",
+    "BreakNode",
+    "ContinueNode",
+    "ThrowNode",
 ]
