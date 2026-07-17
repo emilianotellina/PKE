@@ -58,3 +58,5 @@ class RelationType(str, Enum):
     FILE = "FILE"
 
     FUNCTION = "FUNCTION"
+    
+    PARAMETER = "PARAMETER"

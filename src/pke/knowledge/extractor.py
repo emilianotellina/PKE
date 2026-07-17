@@ -19,9 +19,7 @@ class KnowledgeExtractor:
         result = []
 
 
-        functions = graph.find(
-            node_type="function"
-        )
+        functions = graph.find("function")
 
 
         for function in functions:

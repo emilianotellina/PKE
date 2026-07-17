@@ -30,29 +30,25 @@ class PythonAdapter:
             source
         )
 
-
         self.builder.begin_project(
             "python_project"
         )
-
 
         self.builder.begin_package(
             "root"
         )
 
-
         self.builder.begin_file(
             "module.py"
         )
 
-        
+        self.visit(tree)
+
         self.builder.end_source_context()
         self.builder.end_source_context()
         self.builder.end_source_context()
 
         return self.builder.graph
-
-
 
     def visit(
         self,
@@ -91,14 +87,6 @@ class PythonAdapter:
 
         function = self.builder.begin_function(
             node.name
-        )
-
-        current_file = self.builder.parent_context()
-
-        self.builder.graph.link(
-            current_file,
-            function,
-            RelationType.FUNCTION
         )
 
         for argument in node.args.args:

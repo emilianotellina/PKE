@@ -153,11 +153,7 @@ class CSRBuilder:
 
         node = AssignmentNode()
 
-
-        self.add_expression_node(
-            node
-        )
-
+        self.add_node(node)
 
         self.graph.link(
             node,
@@ -165,16 +161,18 @@ class CSRBuilder:
             RelationType.LEFT
         )
 
-
         self.graph.link(
             node,
             right,
             RelationType.RIGHT
         )
 
+        self.add_to_current_body(
+            node
+        )
 
         return node
-
+    
     def link(
         self,
         source,
@@ -188,7 +186,14 @@ class CSRBuilder:
             relation
         )
 
+    def find_context(self, allowed_types):
 
+        for context in reversed(self.context_stack):
+
+            if context.type in allowed_types:
+                return context.node
+
+        return None
 
     def begin_function(
         self,
@@ -203,27 +208,36 @@ class CSRBuilder:
 
         body = BodyNode()
 
-
         self.add_node(function)
-
         self.add_node(body)
 
+        parent = self.find_context(
+            [
+                "file",
+                "class"
+            ]
+        )
+        if parent is not None:
 
+            self.link(
+                parent,
+                function,
+                RelationType.FUNCTION
+            )
+
+        #
+        # collega il body
+        #
         self.link(
             function,
             body,
             RelationType.BODY
         )
 
-
         self.push_context(function)
-
         self.push_context(body)
 
-
         return function
-
-
 
     def add_parameter(
         self,
@@ -242,13 +256,16 @@ class CSRBuilder:
         )
 
 
-        function = self.parent_context()
-
+        function = self.find_context(
+            [
+                "function"
+            ]
+        )
 
         self.link(
             function,
             parameter,
-            RelationType.ARGUMENT
+            RelationType.PARAMETER
         )
 
 
@@ -270,6 +287,8 @@ class CSRBuilder:
 
         body = self.current_context()
 
+        if body is None:
+            return node
 
         self.link(
             body,
@@ -300,6 +319,19 @@ class CSRBuilder:
 
         return self.context_stack[-2].node
 
+    def add_to_current_body(self, node):
+
+        parent = self.current_context()
+
+        if parent is None:
+            return
+
+        self.link(
+            parent,
+            node,
+            RelationType.CONTAINS
+        )
+        
     def push_context(
         self,
         node
@@ -436,18 +468,15 @@ class CSRBuilder:
             name
         )
 
-
         self.add_expression_node(
             node
         )
-
 
         self.graph.link(
             node,
             obj,
             RelationType.OBJECT
         )
-
 
         return node
 
@@ -570,5 +599,15 @@ class CSRBuilder:
     def end_source_context(
     self
     ):
+
+        self.pop_context()
+            
+
+    def end_if(self):
+
+        self.pop_context()
+
+
+    def end_for(self):
 
         self.pop_context()

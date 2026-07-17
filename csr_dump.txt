@@ -1,0 +1,1525 @@
+===== FILE: src/pke/csr/builder_context.py =====
+class BuilderContext:
+
+
+    def __init__(
+        self,
+        node,
+        context_type
+    ):
+
+        self.node = node
+
+        self.type = context_type
+===== FILE: src/pke/csr/builder.py =====
+from .graph import CSRGraph
+from .relation import RelationType
+from .builder_context import BuilderContext
+
+from .nodes import (
+    FunctionNode,
+    ParameterNode,
+    BodyNode,
+    BlockNode,
+    ReturnNode,
+    IfNode,
+    ForNode,
+    WhileNode,
+    TryNode,
+    BlockNode,
+    AttributeAccessNode,
+    IndexAccessNode,
+    IdentifierNode,
+    LiteralNode,
+    BinaryOperationNode,
+    CallNode,
+    AssignmentNode,
+    ProjectNode,
+    PackageNode,
+    FileNode,
+
+)
+
+class CSRBuilder:
+
+
+    def __init__(self):
+
+        self.graph = CSRGraph()
+
+        self.context_stack = []
+
+
+    def add_node(
+        self,
+        node
+    ):
+
+        self.graph.add(node)
+
+        return node
+
+    def add_expression_node(
+        self,
+        node
+    ):
+
+        self.graph.add(node)
+
+        return node
+
+    def identifier(
+        self,
+        name
+    ):
+
+        node = IdentifierNode(
+            name
+        )
+
+        return self.add_expression_node(
+            node
+        )
+
+    def literal(
+        self,
+        value
+    ):
+
+        node = LiteralNode(
+            value
+        )
+
+        return self.add_expression_node(
+            node
+        )
+
+    def binary(
+        self,
+        operator,
+        left,
+        right
+    ):
+
+        node = BinaryOperationNode(
+            operator
+        )
+
+
+        self.add_expression_node(
+            node
+        )
+
+
+        self.graph.link(
+            node,
+            left,
+            RelationType.LEFT
+        )
+
+
+        self.graph.link(
+            node,
+            right,
+            RelationType.RIGHT
+        )
+
+
+        return node
+
+    def call(
+        self,
+        target,
+        arguments=None
+    ):
+
+        node = CallNode()
+
+
+        self.add_expression_node(
+            node
+        )
+
+
+        self.graph.link(
+            node,
+            target,
+            RelationType.TARGET
+        )
+
+
+        for argument in arguments or []:
+
+            self.graph.link(
+                node,
+                argument,
+                RelationType.ARGUMENT
+            )
+
+
+        return node
+
+    def assignment(
+        self,
+        left,
+        right
+    ):
+
+        node = AssignmentNode()
+
+        self.add_node(node)
+
+        self.graph.link(
+            node,
+            left,
+            RelationType.LEFT
+        )
+
+        self.graph.link(
+            node,
+            right,
+            RelationType.RIGHT
+        )
+
+        self.add_to_current_body(
+            node
+        )
+
+        return node
+    
+    def link(
+        self,
+        source,
+        target,
+        relation
+    ):
+
+        self.graph.link(
+            source,
+            target,
+            relation
+        )
+
+    def find_context(self, allowed_types):
+
+        for context in reversed(self.context_stack):
+
+            if context.type in allowed_types:
+                return context.node
+
+        return None
+
+    def begin_function(
+        self,
+        name,
+        signature=""
+    ):
+
+        function = FunctionNode(
+            name,
+            signature
+        )
+
+        body = BodyNode()
+
+        self.add_node(function)
+        self.add_node(body)
+
+        #
+        # collega la funzione al File corrente
+        #
+        parent = self.current_context()
+
+        if parent and parent.type not in [
+            "file",
+            "class"
+        ]:
+            parent = self.parent_context()
+        if parent is not None:
+
+            self.link(
+                parent,
+                function,
+                RelationType.FUNCTION
+            )
+
+        #
+        # collega il body
+        #
+        self.link(
+            function,
+            body,
+            RelationType.BODY
+        )
+
+        self.push_context(function)
+        self.push_context(body)
+
+        return function
+
+    def add_parameter(
+        self,
+        name,
+        data_type=None
+    ):
+
+        parameter = ParameterNode(
+            name,
+            data_type
+        )
+
+
+        self.add_node(
+            parameter
+        )
+
+
+        function = self.parent_context()
+
+
+        self.link(
+            function,
+            parameter,
+            RelationType.PARAMETER
+        )
+
+
+        return parameter
+
+
+
+    def add_return(
+        self
+    ):
+
+        node = ReturnNode()
+
+
+        self.add_node(
+            node
+        )
+
+
+        body = self.current_context()
+
+        if body is None:
+            return node
+
+        self.link(
+            body,
+            node,
+            RelationType.CONTAINS
+        )
+
+
+        return node
+
+
+
+    def end_function(self):
+        self.pop_context()
+        self.pop_context()
+    
+    def current_context(self):
+
+        if not self.context_stack:
+            return None
+
+        return self.context_stack[-1].node
+    
+    def parent_context(self):
+
+        if len(self.context_stack) < 2:
+            return None
+
+        return self.context_stack[-2].node
+
+    def add_to_current_body(self, node):
+
+        parent = self.current_context()
+
+        if parent is None:
+            return
+
+        self.link(
+            parent,
+            node,
+            RelationType.CONTAINS
+        )
+        
+    def push_context(
+        self,
+        node
+    ):
+
+        self.context_stack.append(
+            BuilderContext(
+                node,
+                node.type
+            )
+        )
+
+
+    def pop_context(self):
+
+        return self.context_stack.pop()
+
+    def begin_block(
+        self
+    ):
+
+        block = BlockNode()
+
+        self.add_node(
+            block
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            block,
+            RelationType.BODY
+        )
+
+
+        self.push_context(
+            block
+        )
+
+
+        return block
+
+
+    def end_block(
+        self
+    ):
+
+        self.pop_context()
+
+    def begin_if(
+        self,
+        condition
+    ):
+
+        node = IfNode()
+
+
+        self.add_node(
+            node
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            node,
+            RelationType.CONTAINS
+        )
+
+
+        self.graph.link(
+            node,
+            condition,
+            RelationType.CONDITION
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node
+
+    def begin_for(
+        self,
+        iterable
+    ):
+
+        node = ForNode()
+
+
+        self.add_node(
+            node
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            node,
+            RelationType.CONTAINS
+        )
+
+
+        self.link(
+            node,
+            iterable,
+            RelationType.ITERABLE
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node
+
+    def attribute(
+        self,
+        obj,
+        name
+    ):
+
+        node = AttributeAccessNode(
+            name
+        )
+
+
+        self.add_expression_node(
+            node
+        )
+        self.add_to_current_body(node)
+
+
+        self.graph.link(
+            node,
+            obj,
+            RelationType.OBJECT
+        )
+
+
+        return node
+
+    def index(
+        self,
+        target,
+        index
+    ):
+
+        node = IndexAccessNode()
+
+
+        self.add_expression_node(
+            node
+        )
+
+
+        self.graph.link(
+            node,
+            target,
+            RelationType.TARGET
+        )
+
+
+        self.graph.link(
+            node,
+            index,
+            RelationType.INDEX
+        )
+
+
+        return node
+
+    def begin_project(
+        self,
+        name
+    ):
+
+        node = ProjectNode(
+            name
+        )
+
+
+        self.add_node(
+            node
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node
+
+    def begin_package(
+        self,
+        name
+    ):
+
+        node = PackageNode(
+            name
+        )
+
+
+        self.add_node(
+            node
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            node,
+            RelationType.PACKAGE
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node
+
+    def begin_file(
+        self,
+        name
+    ):
+
+        node = FileNode(
+            name
+        )
+
+
+        self.add_node(
+            node
+        )
+
+
+        parent = self.current_context()
+
+
+        self.link(
+            parent,
+            node,
+            RelationType.FILE
+        )
+
+
+        self.push_context(
+            node
+        )
+
+
+        return node
+
+    def end_source_context(
+    self
+    ):
+
+        self.pop_context()
+===== FILE: src/pke/csr/edge.py =====
+from dataclasses import dataclass, field
+from uuid import uuid4
+
+from .relation import RelationType
+
+
+@dataclass
+class CSREdge:
+
+    source: str
+
+    target: str
+
+    relation: RelationType
+
+    id: str = field(
+        default_factory=lambda: str(uuid4())
+    )
+
+    attributes: dict = field(
+        default_factory=dict
+    )
+===== FILE: src/pke/csr/graph.py =====
+from collections import defaultdict
+
+from .edge import CSREdge
+from .relation import RelationType
+
+
+class CSRGraph:
+
+    def __init__(self):
+
+        self.nodes = {}
+
+        self.edges = []
+
+        self._outgoing = defaultdict(list)
+
+        self._incoming = defaultdict(list)
+
+
+    def add(self, node):
+
+        self.nodes[node.id] = node
+
+        return node
+
+
+    def link(
+        self,
+        source,
+        target,
+        relation,
+        **attributes
+    ):
+
+        edge = CSREdge(
+            source.id,
+            target.id,
+            relation,
+            attributes=attributes
+        )
+
+        self.edges.append(edge)
+
+        self._outgoing[source.id].append(edge)
+
+        self._incoming[target.id].append(edge)
+
+        return edge
+
+
+    def children(
+        self,
+        node,
+        relation=None
+    ):
+
+        result = []
+
+        for edge in self._outgoing[node.id]:
+
+            if relation and edge.relation != relation:
+
+                continue
+
+            result.append(
+                self.nodes[edge.target]
+            )
+
+        return result
+
+
+    def parents(
+        self,
+        node,
+        relation=None
+    ):
+
+        result = []
+
+        for edge in self._incoming[node.id]:
+
+            if relation and edge.relation != relation:
+
+                continue
+
+            result.append(
+                self.nodes[edge.source]
+            )
+
+        return result
+
+
+    def find(
+        self,
+        node_type=None,
+        name=None
+    ):
+
+        result = []
+
+        for node in self.nodes.values():
+
+            if node_type and node.type != node_type:
+
+                continue
+
+            if name and node.name != name:
+
+                continue
+
+            result.append(node)
+
+        return result
+===== FILE: src/pke/csr/__init__.py =====
+from .node import CSRNode
+from .graph import CSRGraph
+from .edge import CSREdge
+from .builder import CSRBuilder
+from .serializer import CSRSerializer
+
+from .nodes import *
+
+
+__all__ = [
+    "CSRNode",
+    "CSRGraph",
+    "CSRSerializer",
+    "CSREdge",
+    "CSRBuilder",
+]
+===== FILE: src/pke/csr/node.py =====
+from dataclasses import dataclass, field
+from uuid import uuid4
+
+
+@dataclass
+class CSRNode:
+
+    type: str
+
+    name: str
+
+    id: str = field(
+        default_factory=lambda: str(uuid4())
+    )
+
+    attributes: dict = field(
+        default_factory=dict
+    )
+===== FILE: src/pke/csr/nodes/block.py =====
+from .statement import StatementNode
+
+
+class BlockNode(StatementNode):
+
+    def __init__(self):
+
+        super().__init__("block")
+
+
+    def add(self, statement):
+
+        self.children.append(statement)
+===== FILE: src/pke/csr/nodes/body.py =====
+from pke.csr.node import CSRNode
+
+
+class BodyNode(CSRNode):
+
+    def __init__(self):
+
+        super().__init__(
+            type="body",
+            name="body"
+        )
+===== FILE: src/pke/csr/nodes/class_node.py =====
+from .declaration import DeclarationNode
+
+
+class ClassNode(DeclarationNode):
+
+    def __init__(
+        self,
+        name,
+        base_classes=None
+    ):
+
+        super().__init__(
+            node_type="class",
+            name=name,
+            attributes={
+                "base_classes": base_classes or []
+            }
+        )
+===== FILE: src/pke/csr/nodes/control_flow.py =====
+from .statement import StatementNode
+from .block import BlockNode
+
+
+
+class ControlFlowNode(StatementNode):
+
+    def __init__(self, node_type):
+
+        super().__init__(node_type)
+
+class IfNode(ControlFlowNode):
+
+    def __init__(self):
+
+        super().__init__("if")
+
+        self.condition = None
+
+        self.then_block = BlockNode()
+
+        self.else_block = None
+
+class LoopNode(ControlFlowNode):
+
+    def __init__(self, loop_type):
+
+        super().__init__(loop_type)
+
+        self.condition = None
+
+        self.body = BlockNode()
+
+class TryNode(ControlFlowNode):
+
+    def __init__(self):
+
+        super().__init__("try")
+
+        self.try_block = BlockNode()
+
+        self.catch_blocks = []
+
+        self.finally_block = None
+
+class IfNode(StatementNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "if"
+        )
+
+
+class ForNode(StatementNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "for"
+        )
+
+
+class WhileNode(StatementNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "while"
+        )
+
+
+class TryNode(StatementNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "try"
+        )
+===== FILE: src/pke/csr/nodes/declaration.py =====
+from pke.csr.node import CSRNode
+
+
+class DeclarationNode(CSRNode):
+
+    def __init__(
+        self,
+        node_type,
+        name,
+        attributes=None
+    ):
+
+        super().__init__(
+            type=node_type,
+            name=name,
+            attributes=attributes or {}
+        )
+===== FILE: src/pke/csr/nodes/executable.py =====
+from .declaration import DeclarationNode
+
+
+class ExecutableNode(DeclarationNode):
+
+    def __init__(
+        self,
+        node_type,
+        name,
+        attributes=None
+    ):
+
+        super().__init__(
+            node_type=node_type,
+            name=name,
+            attributes=attributes
+        )
+
+        self.body = None
+
+
+    def set_body(
+        self,
+        body
+    ):
+
+        self.body = body
+===== FILE: src/pke/csr/nodes/expression.py =====
+from pke.csr.node import CSRNode
+
+
+class ExpressionNode(CSRNode):
+
+    def __init__(
+        self,
+        expression_type,
+        name=""
+    ):
+
+        super().__init__(
+            type=expression_type,
+            name=name or expression_type
+        )
+
+class IdentifierNode(ExpressionNode):
+
+    def __init__(
+        self,
+        name
+    ):
+
+        super().__init__(
+            "identifier",
+            name
+        )
+
+class LiteralNode(ExpressionNode):
+
+    def __init__(
+        self,
+        value
+    ):
+
+        super().__init__(
+            "literal",
+            str(value)
+        )
+
+        self.attributes["value"] = value
+
+class BinaryOperationNode(ExpressionNode):
+
+    def __init__(
+        self,
+        operator
+    ):
+
+        super().__init__(
+            "binary_operation",
+            operator
+        )
+
+        self.attributes["operator"] = operator
+
+class CallNode(ExpressionNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "call"
+        )
+
+class AssignmentNode(ExpressionNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "assignment"
+        )
+
+class AttributeAccessNode(ExpressionNode):
+
+    def __init__(
+        self,
+        attribute
+    ):
+
+        super().__init__(
+            "attribute_access",
+            attribute
+        )
+
+class IndexAccessNode(ExpressionNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "index_access"
+        )
+
+class AwaitNode(ExpressionNode):
+
+    def __init__(self):
+
+        super().__init__(
+            "await"
+        )
+===== FILE: src/pke/csr/nodes/file.py =====
+from pke.csr.node import CSRNode
+
+
+class FileNode(CSRNode):
+
+    def __init__(
+        self,
+        name,
+        language=None
+    ):
+
+        super().__init__(
+            type="file",
+            name=name,
+            attributes={
+                "language": language
+            }
+        )
+===== FILE: src/pke/csr/nodes/function.py =====
+from .executable import ExecutableNode
+
+
+
+class FunctionNode(ExecutableNode):
+
+    def __init__(
+        self,
+        name,
+        signature="",
+        return_type=None
+    ):
+
+        super().__init__(
+            node_type="function",
+            name=name,
+            attributes={
+                "signature": signature,
+                "return_type": return_type
+            }
+        )
+
+
+    @property
+    def signature(self):
+
+        return self.attributes.get(
+            "signature"
+        )
+
+
+    @property
+    def return_type(self):
+
+        return self.attributes.get(
+            "return_type"
+        )
+===== FILE: src/pke/csr/nodes/import_node.py =====
+from .declaration import DeclarationNode
+
+
+class ImportNode(DeclarationNode):
+
+    def __init__(
+        self,
+        module
+    ):
+
+        super().__init__(
+            node_type="import",
+            name=module
+        )
+===== FILE: src/pke/csr/nodes/__init__.py =====
+from .project import ProjectNode
+from .package import PackageNode
+from .file import FileNode
+from .symbol import SymbolNode
+from .body import BodyNode
+from .statement import StatementNode
+from .expression import ExpressionNode
+from .executable import ExecutableNode
+from .block import BlockNode
+
+from .control_flow import (
+    ControlFlowNode,
+    IfNode,
+    LoopNode,
+    TryNode,
+)
+
+from .transfer import (
+    TransferNode,
+    ReturnNode,
+    BreakNode,
+    ContinueNode,
+    ThrowNode,
+)
+
+from .function import FunctionNode
+from .class_node import ClassNode
+from .variable import (
+    VariableNode,
+    ParameterNode
+)
+from .import_node import ImportNode
+from .expression import (
+    ExpressionNode,
+    IdentifierNode,
+    LiteralNode,
+    BinaryOperationNode,
+    CallNode,
+    AssignmentNode,
+    AttributeAccessNode,
+    IndexAccessNode,
+    AwaitNode,
+)
+from .control_flow import (
+    IfNode,
+    ForNode,
+    WhileNode,
+    TryNode,
+)
+from .source import (
+    ProjectNode,
+    PackageNode,
+    FileNode,
+)
+
+
+__all__ = [
+    "ProjectNode",
+    "PackageNode",
+    "FileNode",
+    "SymbolNode",
+    "FunctionNode",
+    "ClassNode",
+    "VariableNode",
+    "ParameterNode",
+    "ImportNode",
+    "ExecutableNode",
+    "BodyNode",
+    "StatementNode",
+    "ExpressionNode",
+    "BlockNode",
+    "ControlFlowNode",
+    "IfNode",
+    "LoopNode",
+    "TryNode",
+    "TransferNode",
+    "ReturnNode",
+    "BreakNode",
+    "ContinueNode",
+    "ThrowNode",
+    "ExpressionNode",
+    "IdentifierNode",
+    "LiteralNode",
+    "BinaryOperationNode",
+    "CallNode",
+    "AssignmentNode",
+    "AttributeAccessNode",
+    "IndexAccessNode",
+    "AwaitNode",
+    "IfNode",
+    "ForNode",
+    "WhileNode",
+    "TryNode",
+    "ProjectNode",
+    "PackageNode",
+    "FileNode",
+]
+===== FILE: src/pke/csr/nodes/package.py =====
+from pke.csr.node import CSRNode
+
+
+class PackageNode(CSRNode):
+
+    def __init__(
+        self,
+        name
+    ):
+
+        super().__init__(
+            type="package",
+            name=name
+        )
+===== FILE: src/pke/csr/nodes/project.py =====
+from pke.csr.node import CSRNode
+
+
+class ProjectNode(CSRNode):
+
+    def __init__(
+        self,
+        name
+    ):
+
+        super().__init__(
+            type="project",
+            name=name
+        )
+===== FILE: src/pke/csr/nodes/source.py =====
+from pke.csr.node import CSRNode
+
+
+class ProjectNode(CSRNode):
+
+    def __init__(
+        self,
+        name
+    ):
+
+        super().__init__(
+            "project",
+            name
+        )
+
+
+class PackageNode(CSRNode):
+
+    def __init__(
+        self,
+        name
+    ):
+
+        super().__init__(
+            "package",
+            name
+        )
+
+
+class FileNode(CSRNode):
+
+    def __init__(
+        self,
+        name
+    ):
+
+        super().__init__(
+            "file",
+            name
+        )
+===== FILE: src/pke/csr/nodes/statement.py =====
+from pke.csr.node import CSRNode
+
+
+class StatementNode(CSRNode):
+
+    def __init__(
+        self,
+        statement_type
+    ):
+
+        super().__init__(
+            type=statement_type,
+            name=statement_type
+        )
+===== FILE: src/pke/csr/nodes/symbol.py =====
+from pke.csr.node import CSRNode
+
+
+class SymbolNode(CSRNode):
+
+    def __init__(
+        self,
+        name,
+        symbol_type
+    ):
+
+        super().__init__(
+            type=symbol_type,
+            name=name
+        )
+===== FILE: src/pke/csr/nodes/transfer.py =====
+from .statement import StatementNode
+
+
+class TransferNode(StatementNode):
+
+    def __init__(self, node_type):
+
+        super().__init__(node_type)
+
+class ReturnNode(TransferNode):
+
+    def __init__(self):
+
+        super().__init__("return")
+
+        self.value = None
+
+class BreakNode(TransferNode):
+
+    def __init__(self):
+
+        super().__init__("break")
+
+class ContinueNode(TransferNode):
+
+    def __init__(self):
+
+        super().__init__("continue")
+
+class ThrowNode(TransferNode):
+
+    def __init__(self):
+
+        super().__init__("throw")
+
+        self.exception = None
+===== FILE: src/pke/csr/nodes/variable.py =====
+from .declaration import DeclarationNode
+
+
+class VariableNode(DeclarationNode):
+
+    def __init__(
+        self,
+        name,
+        data_type=None
+    ):
+
+        super().__init__(
+            node_type="variable",
+            name=name,
+            attributes={
+                "data_type": data_type
+            }
+        )
+
+class ParameterNode(DeclarationNode):
+
+    def __init__(
+        self,
+        name,
+        data_type=None
+    ):
+
+        super().__init__(
+            node_type="parameter",
+            name=name,
+            attributes={
+                "data_type": data_type
+            }
+        )
+===== FILE: src/pke/csr/relation.py =====
+from enum import Enum
+
+
+class RelationType(str, Enum):
+
+    CONTAINS = "CONTAINS"
+
+    DEFINES = "DEFINES"
+
+    IMPORTS = "IMPORTS"
+
+    CALLS = "CALLS"
+
+    EXTENDS = "EXTENDS"
+
+    IMPLEMENTS = "IMPLEMENTS"
+
+    BODY = "BODY"
+
+    CONDITION = "CONDITION"
+
+    THEN = "THEN"
+
+    ELSE = "ELSE"
+
+    VALUE = "VALUE"
+
+    TARGET = "TARGET"
+
+    ARGUMENT = "ARGUMENT"
+
+    LEFT = "LEFT"
+
+    RIGHT = "RIGHT"
+
+    NEXT = "NEXT"
+
+    PREVIOUS = "PREVIOUS"
+
+    ITERABLE = "ITERABLE"
+
+    EXCEPTION = "EXCEPTION"
+
+    FINALLY = "FINALLY"
+
+    OBJECT = "OBJECT"
+
+    INDEX = "INDEX"
+
+    KEY = "KEY"
+
+    ELEMENT = "ELEMENT"
+
+    PROJECT = "PROJECT"
+
+    PACKAGE = "PACKAGE"
+
+    FILE = "FILE"
+
+    FUNCTION = "FUNCTION"
+===== FILE: src/pke/csr/serializer.py =====
+import json
+
+
+class CSRSerializer:
+
+
+    def serialize(
+        self,
+        graph
+    ):
+
+        return json.dumps(
+            {
+                "nodes": [
+                    self._node(n)
+                    for n in graph.nodes.values()
+                ],
+                "edges": [
+                    self._edge(e)
+                    for e in graph.edges
+                ]
+            },
+            indent=2
+        )
+
+
+
+    def _node(
+        self,
+        node
+    ):
+
+        return {
+            "id": node.id,
+            "type": node.type,
+            "name": node.name,
+            "attributes": node.attributes
+        }
+
+
+
+    def _edge(
+        self,
+        edge
+    ):
+
+        return {
+            "id": edge.id,
+            "source": edge.source,
+            "target": edge.target,
+            "relation": edge.relation,
+            "attributes": edge.attributes
+        }
