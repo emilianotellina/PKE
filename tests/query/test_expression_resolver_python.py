@@ -101,3 +101,44 @@ def login(user):
             ==
             "token = authenticate(user)"
         )
+            
+    def test_python_return_resolution():
+
+
+        graph = PythonAdapter().parse(
+            """
+    def login(user):
+        token = authenticate(user)
+        return token
+    """
+        )
+
+
+        query = CSRQuery(
+            graph
+        )
+
+
+        resolver = ExpressionResolver(
+            query
+        )
+
+
+        returns = graph.find(
+            node_type="return"
+        )
+
+
+        assert len(returns) == 1
+
+
+        result = resolver.resolve(
+            returns[0]
+        )
+
+
+        assert (
+            result
+            ==
+            "return token"
+        )

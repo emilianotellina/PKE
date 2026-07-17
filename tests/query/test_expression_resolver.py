@@ -151,3 +151,41 @@ def test_resolve_call():
             ==
             "token = value"
         )
+        
+    def test_resolve_return():
+
+
+        class FakeQuery:
+
+
+            def value(self, node):
+                return node.value
+
+
+
+        resolver = ExpressionResolver(
+            FakeQuery()
+        )
+
+
+        value = DummyNode(
+            "identifier",
+            name="token",
+        )
+
+
+        return_node = DummyNode(
+            "return"
+        )
+
+
+        return_node.value = value
+
+
+        assert (
+            resolver.resolve(
+                return_node
+            )
+            ==
+            "return token"
+        )

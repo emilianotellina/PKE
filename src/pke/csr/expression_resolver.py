@@ -69,13 +69,9 @@ class ExpressionResolver:
 
     def _resolve_assignment(self, node):
 
-        target = self.query.target(
-            node
-        )
+        target = self.query.target(node)
 
-        value = self.query.value(
-            node
-        )
+        value = self.query.value(node)
 
 
         target_text = self.resolve(
@@ -90,6 +86,24 @@ class ExpressionResolver:
         return (
             f"{target_text}"
             f" = "
+            f"{value_text}"
+        )
+
+
+    def _resolve_return(self, node):
+
+        value = self.query.value(
+            node
+        )
+
+
+        value_text = self.resolve(
+            value
+        )
+
+
+        return (
+            f"return "
             f"{value_text}"
         )
 
