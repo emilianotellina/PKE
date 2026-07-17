@@ -99,3 +99,9 @@ class CSRQuery:
             node,
             RelationType.CALLS
         )
+        
+    def arguments(self, node):
+        return self.related(
+            node,
+            Relation.ARGUMENT
+        )
