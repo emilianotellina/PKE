@@ -178,29 +178,14 @@ class PythonAdapter:
             node.targets[0]
         )
 
-
         right = self.visit(
             node.value
         )
 
-
-        assignment = self.builder.assignment(
+        return self.builder.assignment(
             left,
             right
         )
-
-
-        body = self.builder.current_context()
-
-
-        self.builder.graph.link(
-            body,
-            assignment,
-            RelationType.CONTAINS
-        )
-
-
-        return assignment
 
     def visit_If(
         self,
