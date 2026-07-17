@@ -60,3 +60,44 @@ def login(user):
 
 
         assert result == "authenticate(user)"
+        
+    def test_python_assignment_resolution():
+
+
+        graph = PythonAdapter().parse(
+            """
+    def login(user):
+        token = authenticate(user)
+        return token
+    """
+        )
+
+
+        query = CSRQuery(
+            graph
+        )
+
+
+        resolver = ExpressionResolver(
+            query
+        )
+
+
+        assignments = graph.find(
+            node_type="assignment"
+        )
+
+
+        assert len(assignments) == 1
+
+
+        result = resolver.resolve(
+            assignments[0]
+        )
+
+
+        assert (
+            result
+            ==
+            "token = authenticate(user)"
+        )

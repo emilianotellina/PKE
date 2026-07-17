@@ -58,3 +58,96 @@ def test_unknown_node():
     with pytest.raises(NotImplementedError):
 
         resolver.resolve(node)
+
+def test_resolve_call():
+
+    class FakeQuery:
+
+        def target(self, node):
+            return node.target
+
+
+        def arguments(self, node):
+            return node.arguments
+
+
+    resolver = ExpressionResolver(
+        FakeQuery()
+    )
+
+
+    function = DummyNode(
+        "identifier",
+        name="authenticate",
+    )
+
+    argument = DummyNode(
+        "identifier",
+        name="user",
+    )
+
+
+    call = DummyNode(
+        "call",
+    )
+
+    call.target = function
+    call.arguments = [
+        argument
+    ]
+
+
+    assert (
+        resolver.resolve(call)
+        ==
+        "authenticate(user)"
+    )
+    
+    def test_resolve_assignment():
+
+
+        class FakeQuery:
+
+
+            def target(self, node):
+                return node.target
+
+
+            def value(self, node):
+                return node.value
+
+
+
+        resolver = ExpressionResolver(
+            FakeQuery()
+        )
+
+
+        target = DummyNode(
+            "identifier",
+            name="token",
+        )
+
+
+        value = DummyNode(
+            "identifier",
+            name="value",
+        )
+
+
+        assignment = DummyNode(
+            "assignment"
+        )
+
+
+        assignment.target = target
+        assignment.value = value
+
+
+        assert (
+            resolver.resolve(
+                assignment
+            )
+            ==
+            "token = value"
+        )

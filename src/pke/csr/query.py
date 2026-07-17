@@ -105,3 +105,15 @@ class CSRQuery:
             node,
             Relation.ARGUMENT
         )
+        
+    def target(self, node):
+        return self.related(
+            node,
+            Relation.TARGET
+        )
+        
+    def value(self, node):
+        return self.related(
+            node,
+            Relation.VALUE
+        )
