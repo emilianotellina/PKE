@@ -3,6 +3,8 @@ from .graph import CSRGraph
 from .edge import CSREdge
 from .builder import CSRBuilder
 from .serializer import CSRSerializer
+from .query import CSRQuery
+from .inspector import CSRInspector
 
 from .nodes import *
 
@@ -13,4 +15,6 @@ __all__ = [
     "CSRSerializer",
     "CSREdge",
     "CSRBuilder",
+    "CSRQuery",
+    "CSRInspector"
 ]

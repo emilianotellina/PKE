@@ -17,6 +17,10 @@ from pke.languages import LanguageAnalyzer
 from pke.knowledge import (
     KnowledgePipeline
 )
+from pathlib import Path
+
+from pke.parser.python_adapter import PythonAdapter
+from pke.csr import CSRInspector
 
 
 def main():
@@ -141,6 +145,39 @@ def main():
 
         print(
             "Knowledge generated"
+        )
+
+        return
+
+    if args.command == "inspect":
+
+        path = Path(args.path)
+
+
+        if not path.exists():
+
+            print(
+                f"File not found: {path}"
+            )
+
+            return
+
+
+        source = path.read_text()
+
+
+        graph = PythonAdapter().parse(
+            source
+        )
+
+
+        inspector = CSRInspector(
+            graph
+        )
+
+
+        print(
+            inspector.inspect()
         )
 
         return
