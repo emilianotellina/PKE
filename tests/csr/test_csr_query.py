@@ -53,3 +53,59 @@ def login(user):
     assert len(parameters) == 1
 
     assert parameters[0].name == "user"
+    
+def test_assignment_query():
+
+    graph = PythonAdapter().parse(
+        """
+def login(user):
+    token = authenticate(user)
+"""
+    )
+
+    query = CSRQuery(graph)
+
+    assignment = graph.find(
+        node_type="assignment"
+    )[0]
+
+    target = query.target(
+        assignment
+    )
+
+    value = query.value(
+        assignment
+    )
+
+    assert target.name == "token"
+    assert value.type == "call"
+
+
+def test_call_query():
+
+    graph = PythonAdapter().parse(
+        """
+def login(user):
+    token = authenticate(user)
+"""
+    )
+
+    query = CSRQuery(graph)
+
+    call = graph.find(
+        node_type="call"
+    )[0]
+
+    target = query.target(
+        call
+    )
+
+    arguments = query.arguments(
+        call
+    )
+
+    assert target.name == "authenticate"
+
+    assert len(arguments) == 1
+
+    assert arguments[0].name == "user"

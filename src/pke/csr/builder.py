@@ -153,18 +153,20 @@ class CSRBuilder:
 
         node = AssignmentNode()
 
-        self.add_node(node)
+        self.add_node(
+            node
+        )
 
         self.graph.link(
             node,
             left,
-            RelationType.LEFT
+            RelationType.TARGET
         )
 
         self.graph.link(
             node,
             right,
-            RelationType.RIGHT
+            RelationType.VALUE
         )
 
         self.add_to_current_body(

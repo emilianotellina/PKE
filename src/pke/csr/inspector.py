@@ -1,15 +1,20 @@
-from .query import CSRQuery
+from pke.csr.query import CSRQuery
+from pke.csr.expression_resolver import ExpressionResolver
 
 
 class CSRInspector:
 
+    def __init__(self, graph):
 
-    def __init__(
-        self,
-        graph
-    ):
+        self.graph = graph
 
-        self.query = CSRQuery(graph)
+        self.query = CSRQuery(
+            graph
+        )
+
+        self.resolver = ExpressionResolver(
+            self.query
+        )
 
 
     def inspect(self):
@@ -60,8 +65,20 @@ class CSRInspector:
 
                             for statement in self.query.statements(body):
 
-                                lines.append(
-                                    f"          {statement.type}"
+                                resolved = self.resolver.resolve(
+                                    statement
                                 )
+
+                                if resolved:
+
+                                    lines.append(
+                                        f"          {resolved}"
+                                    )
+
+                                else:
+
+                                    lines.append(
+                                        f"          {statement.type}"
+                                    )
 
         return "\n".join(lines)

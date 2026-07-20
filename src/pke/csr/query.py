@@ -100,20 +100,121 @@ class CSRQuery:
             RelationType.CALLS
         )
         
-    def arguments(self, node):
-        return self.related(
+    def arguments(
+        self,
+        node
+    ):
+
+        return self.graph.children(
             node,
-            Relation.ARGUMENT
+            RelationType.ARGUMENT
         )
-        
-    def target(self, node):
-        return self.related(
+
+
+    def target(
+        self,
+        node
+    ):
+
+        targets = self.graph.children(
             node,
-            Relation.TARGET
+            RelationType.TARGET
         )
-        
-    def value(self, node):
-        return self.related(
+
+        if not targets:
+            return None
+
+        return targets[0]
+
+
+    def value(
+        self,
+        node
+    ):
+
+        values = self.graph.children(
             node,
-            Relation.VALUE
+            RelationType.VALUE
         )
+
+        if not values:
+            return None
+
+        return values[0]
+    
+    def left(
+        self,
+        node
+    ):
+
+        nodes = self.graph.children(
+            node,
+            RelationType.LEFT
+        )
+
+        return nodes[0] if nodes else None
+
+
+    def right(
+        self,
+        node
+    ):
+
+        nodes = self.graph.children(
+            node,
+            RelationType.RIGHT
+        )
+
+        return nodes[0] if nodes else None
+
+
+    def object(
+        self,
+        node
+    ):
+
+        nodes = self.graph.children(
+            node,
+            RelationType.OBJECT
+        )
+
+        return nodes[0] if nodes else None
+
+
+    def index(
+        self,
+        node
+    ):
+
+        nodes = self.graph.children(
+            node,
+            RelationType.INDEX
+        )
+
+        return nodes[0] if nodes else None
+
+
+    def condition(
+        self,
+        node
+    ):
+
+        nodes = self.graph.children(
+            node,
+            RelationType.CONDITION
+        )
+
+        return nodes[0] if nodes else None
+
+
+    def iterable(
+        self,
+        node
+    ):
+
+        nodes = self.graph.children(
+            node,
+            RelationType.ITERABLE
+        )
+
+        return nodes[0] if nodes else None

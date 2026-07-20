@@ -11,8 +11,17 @@ def login(user):
 """
     )
 
-    output = CSRInspector(graph).inspect()
+    output = CSRInspector(
+        graph
+    ).inspect()
 
-    assert "authenticate" in output
-    assert "token" in output
-    assert "user" in output
+
+    assert (
+        "token = authenticate(user)"
+        in output
+    )
+
+    assert (
+        "return token"
+        in output
+    )
