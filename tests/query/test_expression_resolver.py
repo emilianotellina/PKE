@@ -189,3 +189,101 @@ def test_resolve_call():
             ==
             "return token"
         )
+    def test_resolve_binary_operation():
+
+        resolver = ExpressionResolver(
+            DummyQuery()
+        )
+
+
+        node = DummyNode(
+            "binary_operation"
+        )
+
+        node.attributes = {
+            "operator": "+"
+        }
+
+
+        left = DummyNode(
+            "identifier",
+            name="a"
+        )
+
+        right = DummyNode(
+            "identifier",
+            name="b"
+        )
+
+
+        resolver.query.left = lambda n: left
+        resolver.query.right = lambda n: right
+
+
+        assert (
+            resolver.resolve(node)
+            ==
+            "a + b"
+        )
+        
+    def test_resolve_attribute_access():
+
+        resolver = ExpressionResolver(
+            DummyQuery()
+        )
+
+
+        node = DummyNode(
+            "attribute_access",
+            name="name"
+        )
+
+
+        obj = DummyNode(
+            "identifier",
+            name="user"
+        )
+
+
+        resolver.query.object = lambda n: obj
+
+
+        assert (
+            resolver.resolve(node)
+            ==
+            "user.name"
+        )
+            
+    def test_resolve_index_access():
+
+        resolver = ExpressionResolver(
+            DummyQuery()
+        )
+
+
+        node = DummyNode(
+            "index_access"
+        )
+
+
+        target = DummyNode(
+            "identifier",
+            name="users"
+        )
+
+
+        index = DummyNode(
+            "literal",
+            value=0
+        )
+
+
+        resolver.query.target = lambda n: target
+        resolver.query.index = lambda n: index
+
+
+        assert (
+            resolver.resolve(node)
+            ==
+            "users[0]"
+        )
