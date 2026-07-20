@@ -38,7 +38,19 @@ class ExpressionResolver:
 
     def _resolve_literal(self, node):
 
-        return str(node.value)
+        if hasattr(
+            node,
+            "attributes"
+        ):
+
+            return str(
+                node.attributes["value"]
+            )
+
+
+        return str(
+            node.value
+        )
 
 
     def _resolve_call(self, node):
@@ -112,4 +124,84 @@ class ExpressionResolver:
 
         raise NotImplementedError(
             f"Unsupported node type: {node.type}"
+        )
+        
+    def _resolve_binary_operation(
+        self,
+        node
+    ):
+
+        left = self.query.left(
+            node
+        )
+
+        right = self.query.right(
+            node
+        )
+
+
+        left_text = self.resolve(
+            left
+        )
+
+        right_text = self.resolve(
+            right
+        )
+
+
+        operator = node.attributes["operator"]
+
+
+        return (
+            f"{left_text} "
+            f"{operator} "
+            f"{right_text}"
+        )
+
+    def _resolve_attribute_access(
+        self,
+        node
+    ):
+
+        obj = self.query.object(
+            node
+        )
+
+
+        obj_text = self.resolve(
+            obj
+        )
+
+
+        return (
+            f"{obj_text}."
+            f"{node.name}"
+        )
+        
+    def _resolve_index_access(
+        self,
+        node
+    ):
+
+        target = self.query.target(
+            node
+        )
+
+        index = self.query.index(
+            node
+        )
+
+
+        target_text = self.resolve(
+            target
+        )
+
+        index_text = self.resolve(
+            index
+        )
+
+
+        return (
+            f"{target_text}"
+            f"[{index_text}]"
         )
