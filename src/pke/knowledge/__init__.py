@@ -17,6 +17,7 @@ from .producers import (
     FileProducer,
     FunctionProducer,
 )
+from .csr_visitor import KnowledgeCSRVisitor
 
 
 __all__ = [
@@ -39,5 +40,6 @@ __all__ = [
     "KnowledgePipeline",
     "KnowledgeExtractor",
     "MarkdownWriter",
+    "KnowledgeCSRVisitor",
 
 ]
