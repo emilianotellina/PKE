@@ -1,4 +1,6 @@
 from pke.csr.semantic_visitor import SemanticVisitor
+from pke.csr.query import CSRQuery
+from pke.csr.expression_resolver import ExpressionResolver
 
 from .project import Project
 from .package import Package
@@ -8,8 +10,10 @@ from .function import Function, Parameter
 
 class KnowledgeCSRVisitor(SemanticVisitor):
 
-
-    def __init__(self):
+    def __init__(
+        self,
+        graph=None
+    ):
 
         self.project = None
 
@@ -19,6 +23,21 @@ class KnowledgeCSRVisitor(SemanticVisitor):
 
         self.current_function = None
 
+        if graph is not None:
+
+            self.query = CSRQuery(
+                graph
+            )
+
+            self.resolver = ExpressionResolver(
+                self.query
+            )
+
+        else:
+
+            self.query = None
+
+            self.resolver = None
 
 
     def visit_project(
@@ -47,7 +66,6 @@ class KnowledgeCSRVisitor(SemanticVisitor):
         self.current_package = package
 
 
-
     def visit_file(
         self,
         node
@@ -62,7 +80,6 @@ class KnowledgeCSRVisitor(SemanticVisitor):
         )
 
         self.current_file = file
-
 
 
     def visit_function(
@@ -81,7 +98,6 @@ class KnowledgeCSRVisitor(SemanticVisitor):
         self.current_function = function
 
 
-
     def visit_parameter(
         self,
         node
@@ -95,20 +111,49 @@ class KnowledgeCSRVisitor(SemanticVisitor):
             parameter
         )
 
+
     def visit_statement(
         self,
         node
     ):
 
+        if self.current_function is None:
+            return
+
+
         if node.type == "assignment":
 
-            self.current_function.variables.append(
-                node.type
+            left = self.query.left(
+                node
+            )
+
+            right = self.query.right(
+                node
             )
 
 
-        if node.type == "return":
+            if left is not None:
 
-            self.current_function.returns.append(
-                node.type
+                self.current_function.variables.append(
+                    self.resolver.resolve(left)
+                )
+
+
+            if right is not None and right.type == "call":
+
+                self.current_function.calls.append(
+                    self.resolver.resolve(right)
+                )
+
+
+        elif node.type == "return":
+
+            value = self.query.value(
+                node
             )
+
+            if value is not None:
+
+                self.current_function.returns.append(
+                    self.resolver.resolve(value)
+                )

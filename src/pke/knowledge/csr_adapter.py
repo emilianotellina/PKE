@@ -12,7 +12,9 @@ class CSRKnowledgeAdapter:
         graph
     ):
 
-        visitor = KnowledgeCSRVisitor()
+        visitor = KnowledgeCSRVisitor(
+            graph
+        )
 
 
         walker = SemanticWalker(

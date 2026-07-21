@@ -265,3 +265,60 @@ class CSRQuery:
             for statement in self.statements(body)
             if statement.type == "for"
         ]
+    
+    def left(
+        self,
+        node
+    ):
+
+        values = self.related(
+            node,
+            RelationType.LEFT
+        )
+
+        if not values:
+            return None
+
+        return values[0]
+
+
+    def right(
+        self,
+        node
+    ):
+
+        values = self.related(
+            node,
+            RelationType.RIGHT
+        )
+
+        if not values:
+            return None
+
+        return values[0]
+
+    def value(
+        self,
+        node
+    ):
+
+        values = self.related(
+            node,
+            RelationType.VALUE
+        )
+
+        if not values:
+            return None
+
+        return values[0]
+    
+    def related(
+        self,
+        node,
+        relation
+    ):
+
+        return self.graph.children(
+            node,
+            relation
+        )

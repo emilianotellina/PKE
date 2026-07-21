@@ -71,7 +71,7 @@ def login(user):
     )
 
 
-    visitor = KnowledgeCSRVisitor()
+    visitor = KnowledgeCSRVisitor(graph)
 
 
     walker = SemanticWalker(
@@ -99,3 +99,54 @@ def login(user):
     assert len(
         function.returns
     ) == 1
+    
+def test_expression_information():
+
+
+    graph = PythonAdapter().parse(
+        """
+def login(user):
+    token = authenticate(user)
+    return token
+"""
+    )
+
+
+    visitor = KnowledgeCSRVisitor(
+        graph
+    )
+
+
+    walker = SemanticWalker(
+        graph,
+        visitor
+    )
+
+
+    walker.walk()
+
+
+    function = (
+        visitor.project
+        .packages[0]
+        .files[0]
+        .symbols[0]
+    )
+
+
+    assert (
+        "token"
+        in function.variables
+    )
+
+
+    assert (
+        "authenticate(user)"
+        in function.calls
+    )
+
+
+    assert (
+        "token"
+        in function.returns
+    )
