@@ -218,3 +218,50 @@ class CSRQuery:
         )
 
         return nodes[0] if nodes else None
+
+    def assignments(
+        self,
+        body
+    ):
+
+        return [
+            statement
+            for statement in self.statements(body)
+            if statement.type == "assignment"
+        ]
+
+
+    def returns(
+        self,
+        body
+    ):
+
+        return [
+            statement
+            for statement in self.statements(body)
+            if statement.type == "return"
+        ]
+
+
+    def ifs(
+        self,
+        body
+    ):
+
+        return [
+            statement
+            for statement in self.statements(body)
+            if statement.type == "if"
+        ]
+
+
+    def fors(
+        self,
+        body
+    ):
+
+        return [
+            statement
+            for statement in self.statements(body)
+            if statement.type == "for"
+        ]

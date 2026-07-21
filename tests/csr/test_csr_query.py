@@ -109,3 +109,43 @@ def login(user):
     assert len(arguments) == 1
 
     assert arguments[0].name == "user"
+    
+def test_statement_queries():
+
+    graph = PythonAdapter().parse(
+        """
+def test():
+
+    x = 1
+
+    return x
+"""
+    )
+
+    query = CSRQuery(
+        graph
+    )
+
+    function = query.functions(
+        query.files(
+            query.packages(
+                query.projects()[0]
+            )[0]
+        )[0]
+    )[0]
+
+    body = query.body(
+        function
+    )
+
+    assignments = query.assignments(
+        body
+    )
+
+    returns = query.returns(
+        body
+    )
+
+    assert len(assignments) == 1
+
+    assert len(returns) == 1
