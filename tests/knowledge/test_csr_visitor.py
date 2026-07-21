@@ -57,3 +57,45 @@ def login(user):
         ==
         "user"
     )
+    
+    
+def test_function_semantics():
+
+
+    graph = PythonAdapter().parse(
+        """
+def login(user):
+    token = authenticate(user)
+    return token
+"""
+    )
+
+
+    visitor = KnowledgeCSRVisitor()
+
+
+    walker = SemanticWalker(
+        graph,
+        visitor
+    )
+
+
+    walker.walk()
+
+
+    function = (
+        visitor.project
+        .packages[0]
+        .files[0]
+        .symbols[0]
+    )
+
+
+    assert len(
+        function.variables
+    ) == 1
+
+
+    assert len(
+        function.returns
+    ) == 1

@@ -94,3 +94,21 @@ class KnowledgeCSRVisitor(SemanticVisitor):
         self.current_function.parameters.append(
             parameter
         )
+
+    def visit_statement(
+        self,
+        node
+    ):
+
+        if node.type == "assignment":
+
+            self.current_function.variables.append(
+                node.type
+            )
+
+
+        if node.type == "return":
+
+            self.current_function.returns.append(
+                node.type
+            )

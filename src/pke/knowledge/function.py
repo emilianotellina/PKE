@@ -13,6 +13,7 @@ class Parameter:
     default_value: str = ""
 
 
+
 @dataclass
 class Function(Symbol):
 
@@ -20,16 +21,30 @@ class Function(Symbol):
 
     return_type: str = ""
 
+
     parameters: list[Parameter] = field(
         default_factory=list
     )
+
 
     calls: list = field(
         default_factory=list
     )
 
+
     called_by: list = field(
         default_factory=list
     )
+
+
+    returns: list = field(
+        default_factory=list
+    )
+
+
+    variables: list = field(
+        default_factory=list
+    )
+
 
     complexity: int = 0
