@@ -6,6 +6,8 @@ from .serializer import CSRSerializer
 from .query import CSRQuery
 from .inspector import CSRInspector
 from .expression_resolver import ExpressionResolver
+from .semantic_walker import SemanticWalker
+from .semantic_visitor import SemanticVisitor
 
 from .nodes import *
 
@@ -19,5 +21,7 @@ __all__ = [
     "CSRQuery",
     "CSRInspector",
     "ExpressionResolver",
+    "SemanticWalker",
+    "SemanticVisitor",
     
 ]
