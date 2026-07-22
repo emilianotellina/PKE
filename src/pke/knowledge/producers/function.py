@@ -1,47 +1,114 @@
-from .base import KnowledgeProducer
+class FunctionProducer:
 
 
-class FunctionProducer(KnowledgeProducer):
+    def generate(
+        self,
+        function
+    ):
+
+        lines = []
 
 
-    def generate(self, function):
-
-
-        content = []
-
-
-        content.append(
-            f"# Function {function.name}\n"
+        lines.append(
+            f"# {function.name}"
         )
 
 
-        signature = (
-            function.signature
-            if function.signature
-            else function.name
-        )
+        lines.append("")
 
 
-        content.append(
-            f"Signature: {signature}\n"
-        )
+        if function.signature:
 
-
-        content.append(
-            f"Returns: {function.return_type}\n"
-        )
-
-
-        content.append(
-            "\n## Parameters\n"
-        )
-
-
-        for param in function.parameters:
-
-            content.append(
-                f"- {param.name}: {param.type}"
+            lines.append(
+                "## Signature"
             )
 
+            lines.append("")
 
-        return "\n".join(content)
+            lines.append(
+                function.signature
+            )
+
+            lines.append("")
+
+
+
+        if function.parameters:
+
+            lines.append(
+                "## Parameters"
+            )
+
+            lines.append("")
+
+
+            for parameter in function.parameters:
+
+                lines.append(
+                    f"- {parameter.name}"
+                )
+
+
+            lines.append("")
+
+
+
+        if function.variables:
+
+            lines.append(
+                "## Variables"
+            )
+
+            lines.append("")
+
+
+            for variable in function.variables:
+
+                lines.append(
+                    f"- {variable}"
+                )
+
+
+            lines.append("")
+
+
+
+        if function.calls:
+
+            lines.append(
+                "## Calls"
+            )
+
+            lines.append("")
+
+
+            for call in function.calls:
+
+                lines.append(
+                    f"- {call}"
+                )
+
+
+            lines.append("")
+
+
+
+        if function.returns:
+
+            lines.append(
+                "## Returns"
+            )
+
+            lines.append("")
+
+
+            for value in function.returns:
+
+                lines.append(
+                    f"- {value}"
+                )
+
+
+        return "\n".join(
+            lines
+        )

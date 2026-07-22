@@ -10,6 +10,7 @@ from .function import Function, Parameter
 
 class KnowledgeCSRVisitor(SemanticVisitor):
 
+
     def __init__(
         self,
         graph=None
@@ -22,6 +23,7 @@ class KnowledgeCSRVisitor(SemanticVisitor):
         self.current_file = None
 
         self.current_function = None
+
 
         if graph is not None:
 
@@ -40,6 +42,7 @@ class KnowledgeCSRVisitor(SemanticVisitor):
             self.resolver = None
 
 
+
     def visit_project(
         self,
         node
@@ -48,6 +51,7 @@ class KnowledgeCSRVisitor(SemanticVisitor):
         self.project = Project(
             name=node.name
         )
+
 
 
     def visit_package(
@@ -59,11 +63,14 @@ class KnowledgeCSRVisitor(SemanticVisitor):
             name=node.name
         )
 
+
         self.project.packages.append(
             package
         )
 
+
         self.current_package = package
+
 
 
     def visit_file(
@@ -75,11 +82,14 @@ class KnowledgeCSRVisitor(SemanticVisitor):
             name=node.name
         )
 
+
         self.current_package.files.append(
             file
         )
 
+
         self.current_file = file
+
 
 
     def visit_function(
@@ -91,11 +101,14 @@ class KnowledgeCSRVisitor(SemanticVisitor):
             name=node.name
         )
 
+
         self.current_file.symbols.append(
             function
         )
 
+
         self.current_function = function
+
 
 
     def visit_parameter(
@@ -107,9 +120,11 @@ class KnowledgeCSRVisitor(SemanticVisitor):
             name=node.name
         )
 
+
         self.current_function.parameters.append(
             parameter
         )
+
 
 
     def visit_statement(
@@ -121,11 +136,16 @@ class KnowledgeCSRVisitor(SemanticVisitor):
             return
 
 
+        if self.query is None:
+            return
+
+
         if node.type == "assignment":
 
             left = self.query.left(
                 node
             )
+
 
             right = self.query.right(
                 node
@@ -134,16 +154,54 @@ class KnowledgeCSRVisitor(SemanticVisitor):
 
             if left is not None:
 
-                self.current_function.variables.append(
-                    self.resolver.resolve(left)
+                variable = self.resolver.resolve(
+                    left
                 )
 
+                if variable not in self.current_function.variables:
 
-            if right is not None and right.type == "call":
+                    self.current_function.variables.append(
+                        variable
+                    )
 
-                self.current_function.calls.append(
-                    self.resolver.resolve(right)
-                )
+
+                if right is not None:
+
+                    expression = self.resolver.resolve(
+                        right
+                    )
+
+
+                    if right.type == "call":
+
+                        if expression not in self.current_function.calls:
+
+                            self.current_function.calls.append(
+                                expression
+                            )
+
+
+                        target = self.query.target(
+                            right
+                        )
+
+
+                        if target is not None:
+
+                            target_name = self.resolver.resolve(
+                                target
+                            )
+
+
+                            if (
+                                target_name
+                                not in self.current_function.call_targets
+                            ):
+
+                                self.current_function.call_targets.append(
+                                    target_name
+                                )
+
 
 
         elif node.type == "return":
@@ -152,8 +210,16 @@ class KnowledgeCSRVisitor(SemanticVisitor):
                 node
             )
 
+
             if value is not None:
 
-                self.current_function.returns.append(
-                    self.resolver.resolve(value)
+                expression = self.resolver.resolve(
+                    value
                 )
+
+
+                if expression not in self.current_function.returns:
+
+                    self.current_function.returns.append(
+                        expression
+                    )

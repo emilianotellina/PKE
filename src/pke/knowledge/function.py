@@ -31,8 +31,21 @@ class Function(Symbol):
         default_factory=list
     )
 
-
     called_by: list = field(
+        default_factory=list
+    )
+
+
+    call_targets: list = field(
+        default_factory=list
+    )
+
+    callers: list = field(
+        default_factory=list
+    )
+
+
+    variables: list = field(
         default_factory=list
     )
 
@@ -42,7 +55,12 @@ class Function(Symbol):
     )
 
 
-    variables: list = field(
+    statements: list = field(
+        default_factory=list
+    )
+
+
+    dependencies: list = field(
         default_factory=list
     )
 
