@@ -4,7 +4,12 @@ from pke.csr.semantic_walker import SemanticWalker
 
 from pke.knowledge import (
     KnowledgeCSRVisitor,
-    KnowledgeGraphExporter,
+    SemanticCallGraphBuilder,
+    ArchitectureMetrics,
+)
+
+from pke.context import (
+    ContextEngine,
 )
 
 
@@ -39,7 +44,9 @@ graph = PythonAdapter().parse(
 
 
 
-visitor = KnowledgeCSRVisitor()
+visitor = KnowledgeCSRVisitor(
+    graph
+)
 
 
 
@@ -50,13 +57,61 @@ SemanticWalker(
 
 
 
-file = KnowledgeGraphExporter().export(
+call_graph = SemanticCallGraphBuilder().build(
+    visitor.project
+)
+
+
+
+metrics = ArchitectureMetrics(
+    call_graph
+).calculate()
+
+
+
+result = ContextEngine().build(
     visitor.project,
-    "out/knowledge.json"
+    "save_user",
+    call_graph,
+    None,
+    metrics,
+    100
 )
 
 
 
 print(
-    file
+    "TARGET:"
+)
+
+print(
+    result["target"]
+)
+
+
+print()
+
+
+print(
+    "RANKING:"
+)
+
+
+for item in result["ranking"]:
+
+    print(
+        item
+    )
+
+
+print()
+
+
+print(
+    "CONTEXT:"
+)
+
+
+print(
+    result["context"]
 )
