@@ -1,0 +1,91 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "type": "project",
+      "name": "python_project"
+    },
+    {
+      "id": 2,
+      "type": "package",
+      "name": "root"
+    },
+    {
+      "id": 3,
+      "type": "file",
+      "name": "module.py"
+    },
+    {
+      "id": 4,
+      "type": "function",
+      "name": "create_user"
+    },
+    {
+      "id": 5,
+      "type": "function",
+      "name": "save_user"
+    },
+    {
+      "id": 6,
+      "type": "function",
+      "name": "send_email"
+    },
+    {
+      "id": 7,
+      "type": "external",
+      "name": "db.save"
+    },
+    {
+      "id": 8,
+      "type": "external",
+      "name": "print"
+    }
+  ],
+  "edges": [
+    {
+      "source": 1,
+      "target": 2,
+      "relation": "CONTAINS"
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "relation": "CONTAINS"
+    },
+    {
+      "source": 3,
+      "target": 4,
+      "relation": "CONTAINS"
+    },
+    {
+      "source": 4,
+      "target": 5,
+      "relation": "CALLS"
+    },
+    {
+      "source": 4,
+      "target": 6,
+      "relation": "CALLS"
+    },
+    {
+      "source": 3,
+      "target": 5,
+      "relation": "CONTAINS"
+    },
+    {
+      "source": 5,
+      "target": 7,
+      "relation": "CALLS"
+    },
+    {
+      "source": 3,
+      "target": 6,
+      "relation": "CONTAINS"
+    },
+    {
+      "source": 6,
+      "target": 8,
+      "relation": "CALLS"
+    }
+  ]
+}

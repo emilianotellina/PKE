@@ -1,30 +1,11 @@
-from pathlib import Path
-import shutil
-
-
 from pke.parser import PythonAdapter
 
 from pke.csr.semantic_walker import SemanticWalker
 
 from pke.knowledge import (
     KnowledgeCSRVisitor,
-    SemanticCallGraphBuilder,
-    SemanticCallAnalyzer,
-    KnowledgeGenerator,
+    KnowledgeGraphExporter,
 )
-
-
-
-output = Path(
-    "knowledge_output"
-)
-
-
-if output.exists():
-
-    shutil.rmtree(
-        output
-    )
 
 
 
@@ -61,6 +42,7 @@ graph = PythonAdapter().parse(
 visitor = KnowledgeCSRVisitor()
 
 
+
 SemanticWalker(
     graph,
     visitor
@@ -68,31 +50,13 @@ SemanticWalker(
 
 
 
-call_graph = SemanticCallGraphBuilder().build(
-    visitor.project
-)
-
-
-
-SemanticCallAnalyzer(
-    call_graph
-).propagate_effects()
-
-
-
-KnowledgeGenerator(
-    output
-).generate(
+file = KnowledgeGraphExporter().export(
     visitor.project,
-    call_graph
+    "out/knowledge.json"
 )
 
 
 
-for file in output.rglob(
-    "*.md"
-):
-
-    print(
-        file
-    )
+print(
+    file
+)

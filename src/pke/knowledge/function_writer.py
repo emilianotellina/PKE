@@ -19,21 +19,19 @@ class FunctionWriter:
     def write(
         self,
         function,
-        metrics=None
+        metric=None
     ):
 
-        path = self.output_path / (
-            function.name + ".md"
-        )
 
-
-        path.parent.mkdir(
-            parents=True,
-            exist_ok=True
+        path = (
+            self.output_path
+            /
+            f"{function.name}.md"
         )
 
 
         content = []
+
 
 
         content.append(
@@ -41,8 +39,9 @@ class FunctionWriter:
         )
 
 
+
         content.append(
-            "## Calls\n"
+            "\n## Calls\n"
         )
 
 
@@ -61,17 +60,18 @@ class FunctionWriter:
             )
 
 
+
         content.append(
-            "\n## Call Targets\n"
+            "\n## Called By\n"
         )
 
 
-        if function.call_targets:
+        if function.called_by:
 
-            for target in function.call_targets:
+            for caller in function.called_by:
 
                 content.append(
-                    f"- {target}\n"
+                    f"- {caller}\n"
                 )
 
         else:
@@ -79,6 +79,28 @@ class FunctionWriter:
             content.append(
                 "- None\n"
             )
+
+
+
+        content.append(
+            "\n## References\n"
+        )
+
+
+        if function.references:
+
+            for reference in function.references:
+
+                content.append(
+                    f"- {reference}\n"
+                )
+
+        else:
+
+            content.append(
+                "- None\n"
+            )
+
 
 
         content.append(
@@ -101,51 +123,19 @@ class FunctionWriter:
             )
 
 
-        content.append(
-            "\n## Dependencies\n"
-        )
 
-
-        if function.dependencies:
-
-            for dependency in function.dependencies:
-
-                content.append(
-                    f"- {dependency.type}\n"
-                )
-
-        else:
-
-            content.append(
-                "- None\n"
-            )
-
-
-        if metrics is not None:
+        if metric:
 
             content.append(
                 "\n## Metrics\n"
             )
 
+            for key,value in metric.items():
 
-            content.append(
-                f"""
-Fan in:
-{metrics.fan_in}
+                content.append(
+                    f"\n{key}:\n{value}\n"
+                )
 
-Fan out:
-{metrics.fan_out}
-
-Instability:
-{metrics.instability}
-
-Complexity:
-{metrics.complexity}
-
-Criticality:
-{metrics.criticality}
-"""
-            )
 
 
         path.write_text(
