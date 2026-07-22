@@ -13,7 +13,7 @@ from .writers import MarkdownWriter
 from .csr_adapter import CSRKnowledgeAdapter
 from .variable import VariableKnowledge
 from .side_effect import SideEffectKnowledge
-
+from .semantic_call_analyzer import SemanticCallAnalyzer
 from .producers import (
     KnowledgeProducer,
     PackageProducer,
@@ -34,7 +34,20 @@ from .call_graph_analyzer import (
     CallGraphMetrics,
 )
 from .call_resolver import CallResolver
+from .architecture_graph import (
+    ArchitectureGraph,
+    ArchitectureNode,
+    ArchitectureEdge,
+)
 
+from .architecture_graph_builder import (
+    ArchitectureGraphBuilder,
+)
+from .semantic_call_graph import SemanticCallGraphBuilder
+from .architecture_metrics import (
+    ArchitectureMetrics,
+    FunctionMetrics,
+)
 
 __all__ = [
 
@@ -68,5 +81,13 @@ __all__ = [
     "CallGraphAnalyzer",
     "CallGraphMetrics",
     "CallResolver",
+    "ArchitectureGraph",
+    "ArchitectureNode",
+    "ArchitectureEdge",
+    "ArchitectureGraphBuilder",
+    "SemanticCallGraphBuilder",
+    "SemanticCallAnalyzer",
+    "ArchitectureMetrics",
+    "FunctionMetrics",
 
 ]
