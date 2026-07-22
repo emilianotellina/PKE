@@ -1,10 +1,11 @@
-from .producers import (
-    PackageProducer,
-    FileProducer,
-    FunctionProducer,
-)
+from pathlib import Path
 
-from .writer import KnowledgeWriter
+from .function_writer import FunctionWriter
+from .file_writer import FileWriter
+from .package_writer import PackageWriter
+from .project_writer import ProjectWriter
+from .architecture_metrics import ArchitectureMetrics
+
 
 
 class KnowledgeGenerator:
@@ -12,57 +13,115 @@ class KnowledgeGenerator:
 
     def __init__(
         self,
-        output_dir="knowledge"
+        output_path
     ):
 
-        self.writer = KnowledgeWriter(
-            output_dir
+        self.output_path = Path(
+            output_path
         )
-
-        self.package = PackageProducer()
-
-        self.file = FileProducer()
-
-        self.function = FunctionProducer()
 
 
 
     def generate(
         self,
-        project
+        project,
+        call_graph=None
     ):
+
+        metrics = {}
+
+
+        if call_graph is not None:
+
+            metrics = ArchitectureMetrics(
+                call_graph
+            ).calculate()
+
+
+
+        project_path = (
+            self.output_path
+            /
+            project.name
+        )
+
+
+        project_path.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+
+        #
+        # Project.md
+        #
+        ProjectWriter(
+            project_path
+        ).write(
+            project,
+            call_graph
+        )
+
+
 
         for package in project.packages:
 
-            package_name = (
+
+            package_path = (
+                project_path
+                /
                 package.name
-                if package.name != "."
-                else "root"
             )
 
 
-            self.writer.write(
-                f"packages/{package_name}/Package.md",
-                self.package.generate(package)
+            package_path.mkdir(
+                parents=True,
+                exist_ok=True
             )
+
+
+            PackageWriter(
+                package_path
+            ).write(
+                package
+            )
+
 
 
             for file in package.files:
 
-                file_name = file.name
 
-
-                self.writer.write(
-                    f"files/{file_name}/File.md",
-                    self.file.generate(file)
+                file_path = (
+                    package_path
+                    /
+                    file.name
                 )
+
+
+                file_path.mkdir(
+                    parents=True,
+                    exist_ok=True
+                )
+
+
+                FileWriter(
+                    file_path
+                ).write(
+                    file
+                )
+
 
 
                 for symbol in file.symbols:
 
-                    if symbol.type == "FUNCTION":
+                    metric = metrics.get(
+                        symbol.name
+                    )
 
-                        self.writer.write(
-                            f"functions/{symbol.name}/Function.md",
-                            self.function.generate(symbol)
-                        )
+
+                    FunctionWriter(
+                        file_path
+                    ).write(
+                        symbol,
+                        metric
+                    )

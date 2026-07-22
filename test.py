@@ -1,13 +1,30 @@
+from pathlib import Path
+import shutil
+
+
 from pke.parser import PythonAdapter
+
+from pke.csr.semantic_walker import SemanticWalker
 
 from pke.knowledge import (
     KnowledgeCSRVisitor,
     SemanticCallGraphBuilder,
     SemanticCallAnalyzer,
-    ArchitectureMetrics,
+    KnowledgeGenerator,
 )
 
-from pke.csr.semantic_walker import SemanticWalker
+
+
+output = Path(
+    "knowledge_output"
+)
+
+
+if output.exists():
+
+    shutil.rmtree(
+        output
+    )
 
 
 
@@ -63,43 +80,19 @@ SemanticCallAnalyzer(
 
 
 
-metrics = ArchitectureMetrics(
+KnowledgeGenerator(
+    output
+).generate(
+    visitor.project,
     call_graph
 )
 
 
 
-result = metrics.calculate()
-
-
-
-for name, value in result.items():
-
-    print(name)
+for file in output.rglob(
+    "*.md"
+):
 
     print(
-        "fan_in:",
-        value.fan_in
+        file
     )
-
-    print(
-        "fan_out:",
-        value.fan_out
-    )
-
-    print(
-        "instability:",
-        value.instability
-    )
-
-    print(
-        "complexity:",
-        value.complexity
-    )
-
-    print(
-        "criticality:",
-        value.criticality
-    )
-
-    print()
