@@ -26,3 +26,7 @@ class SemanticVisitor:
 
     def visit_statement(self, node):
         pass
+
+
+    def visit_call(self, node):
+        pass

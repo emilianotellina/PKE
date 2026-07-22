@@ -17,6 +17,7 @@ class SemanticWalker:
 
         self.visitor = visitor
 
+
         #
         # Iniezione dipendenze nel visitor
         #
@@ -32,6 +33,33 @@ class SemanticWalker:
             )
 
 
+
+    def _walk_calls(
+        self,
+        node
+    ):
+
+        calls = self.query.calls(
+            node
+        )
+
+
+        for call in calls:
+
+            self.visitor.visit_call(
+                call
+            )
+
+
+            #
+            # Supporto futuro per call annidate
+            #
+            self._walk_calls(
+                call
+            )
+
+
+
     def walk(self):
 
         for project in self.query.projects():
@@ -40,17 +68,20 @@ class SemanticWalker:
                 project
             )
 
+
             for package in self.query.packages(project):
 
                 self.visitor.visit_package(
                     package
                 )
 
+
                 for file in self.query.files(package):
 
                     self.visitor.visit_file(
                         file
                     )
+
 
                     for function in self.query.functions(file):
 
@@ -84,5 +115,10 @@ class SemanticWalker:
                         for statement in self.query.statements(body):
 
                             self.visitor.visit_statement(
+                                statement
+                            )
+
+
+                            self._walk_calls(
                                 statement
                             )

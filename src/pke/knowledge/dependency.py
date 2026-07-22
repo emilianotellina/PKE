@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Dependency:
-
-    source: str
-
-    target: str
+class DependencyKnowledge:
 
     type: str
+
+    name: str
+
+    source: str = ""

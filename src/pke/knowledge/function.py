@@ -2,7 +2,10 @@ from dataclasses import dataclass, field
 
 from .symbol import Symbol
 from .variable import VariableKnowledge
-
+from .side_effect import SideEffectKnowledge
+from .call import CallKnowledge
+from .property_access import PropertyAccessKnowledge
+from .dependency import DependencyKnowledge
 
 
 @dataclass
@@ -34,6 +37,11 @@ class Function(Symbol):
     )
 
 
+    call_details: list[CallKnowledge] = field(
+        default_factory=list
+    )
+
+
     called_by: list = field(
         default_factory=list
     )
@@ -49,7 +57,23 @@ class Function(Symbol):
     )
 
 
-    variables: list[VariableKnowledge] = field(
+    # Compatibilità con API esistente
+    variables: list[str] = field(
+        default_factory=list
+    )
+
+
+    # Analisi semantica avanzata delle variabili
+    variable_details: list[VariableKnowledge] = field(
+        default_factory=list
+    )
+
+    property_accesses: list[PropertyAccessKnowledge] = field(
+        default_factory=list
+    )
+
+    # Effetti collaterali della funzione
+    side_effects: list[SideEffectKnowledge] = field(
         default_factory=list
     )
 
@@ -64,7 +88,7 @@ class Function(Symbol):
     )
 
 
-    dependencies: list = field(
+    dependencies: list[DependencyKnowledge] = field(
         default_factory=list
     )
 

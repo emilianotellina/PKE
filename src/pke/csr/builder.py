@@ -111,11 +111,13 @@ class CSRBuilder:
 
         self.add_expression_node(node)
 
+
         self.graph.link(
             node,
             target,
             RelationType.TARGET
         )
+
 
         for argument in arguments or []:
 
@@ -124,6 +126,32 @@ class CSRBuilder:
                 argument,
                 RelationType.ARGUMENT
             )
+
+
+        #
+        # Se la call è una statement standalone
+        # deve essere visibile nel body corrente.
+        #
+        parent = self.current_context()
+
+
+        if parent is not None:
+
+            if parent.type in (
+                "body",
+                "block",
+                "if",
+                "for",
+                "while",
+                "try"
+            ):
+
+                self.link(
+                    parent,
+                    node,
+                    RelationType.CONTAINS
+                )
+
 
         return node
 
