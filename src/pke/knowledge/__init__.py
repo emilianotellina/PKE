@@ -12,6 +12,7 @@ from .pipeline import KnowledgePipeline
 from .extractor import KnowledgeExtractor
 from .writers import MarkdownWriter
 from .csr_adapter import CSRKnowledgeAdapter
+from .variable import VariableKnowledge
 from .producers import (
     KnowledgeProducer,
     PackageProducer,
@@ -43,5 +44,6 @@ __all__ = [
     "MarkdownWriter",
     "KnowledgeCSRVisitor",
     "CSRKnowledgeAdapter",
+    "VariableKnowledge",
 
 ]

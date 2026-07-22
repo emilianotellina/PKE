@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 
 from .symbol import Symbol
+from .variable import VariableKnowledge
+
 
 
 @dataclass
@@ -31,6 +33,7 @@ class Function(Symbol):
         default_factory=list
     )
 
+
     called_by: list = field(
         default_factory=list
     )
@@ -40,12 +43,13 @@ class Function(Symbol):
         default_factory=list
     )
 
+
     callers: list = field(
         default_factory=list
     )
 
 
-    variables: list = field(
+    variables: list[VariableKnowledge] = field(
         default_factory=list
     )
 
