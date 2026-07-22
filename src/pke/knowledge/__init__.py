@@ -33,6 +33,7 @@ from .call_graph_analyzer import (
     CallGraphAnalyzer,
     CallGraphMetrics,
 )
+from .call_resolver import CallResolver
 
 
 __all__ = [
@@ -66,5 +67,6 @@ __all__ = [
     "CallGraphNode",
     "CallGraphAnalyzer",
     "CallGraphMetrics",
+    "CallResolver",
 
 ]

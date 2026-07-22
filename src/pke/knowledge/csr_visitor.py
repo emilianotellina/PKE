@@ -308,6 +308,7 @@ class KnowledgeCSRVisitor(SemanticVisitor):
 
 
         return CallKnowledge(
+            caller=self.current_function.name,
             target=target_name,
             receiver=receiver,
             arguments=arguments,
@@ -333,7 +334,8 @@ class KnowledgeCSRVisitor(SemanticVisitor):
         for existing in self.current_function.call_details:
 
             if (
-                existing.target == detail.target
+                existing.caller == detail.caller
+                and existing.target == detail.target
                 and existing.receiver == detail.receiver
                 and existing.arguments == detail.arguments
             ):

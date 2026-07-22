@@ -2,8 +2,7 @@ from pke.parser import PythonAdapter
 
 from pke.knowledge import (
     KnowledgeCSRVisitor,
-    CallGraphBuilder,
-    CallGraphAnalyzer
+    CallResolver
 )
 
 from pke.csr.semantic_walker import SemanticWalker
@@ -14,10 +13,14 @@ source = """
 
 def create_user(user):
 
-    db.save(user)
+    save_user(user)
 
     send_email(user)
 
+
+def save_user(user):
+
+    db.save(user)
 
 
 def send_email(user):
@@ -27,9 +30,11 @@ def send_email(user):
 """
 
 
+
 graph = PythonAdapter().parse(
     source
 )
+
 
 
 visitor = KnowledgeCSRVisitor(
@@ -46,63 +51,44 @@ walker.walk()
 
 
 
-call_graph = CallGraphBuilder().build(
-    visitor.project
+functions = (
+    visitor
+    .project
+    .packages[0]
+    .files[0]
+    .symbols
 )
 
 
 
-metrics = CallGraphAnalyzer(
-    call_graph
-).analyze()
-
-
-
-print(
-    "ENTRY POINTS:"
+resolver = CallResolver(
+    functions
 )
 
-for item in metrics.entry_points:
+
+
+for function in functions:
 
     print(
-        " -",
-        item
+        "\nFUNCTION:",
+        function.name
     )
 
 
+    for call in function.call_details:
 
-print(
-    "\nLEAF FUNCTIONS:"
-)
-
-for item in metrics.leaf_functions:
-
-    print(
-        " -",
-        item
-    )
+        resolver.resolve(
+            call
+        )
 
 
-
-print(
-    "\nFAN OUT:"
-)
-
-for name,value in metrics.fan_out.items():
-
-    print(
-        name,
-        value
-    )
-
-
-print(
-    "\nFAN IN:"
-)
-
-for name,value in metrics.fan_in.items():
-
-    print(
-        name,
-        value
-    )
+        print(
+            " ",
+            call.caller,
+            "->",
+            call.target,
+            "[",
+            call.resolved_type,
+            "]",
+            call.module
+        )

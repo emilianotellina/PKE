@@ -3,11 +3,11 @@ from dataclasses import dataclass, field
 
 @dataclass
 class CallKnowledge:
+    """
+    Rappresenta una chiamata estratta dal CSR.
+    """
 
-    """
-    Rappresenta una chiamata di funzione/metodo
-    estratta dal CSR.
-    """
+    caller: str
 
     target: str
 
@@ -18,5 +18,9 @@ class CallKnowledge:
     )
 
     kind: str = "function_call"
+
+    resolved_type: str = ""
+
+    module: str = ""
 
     side_effect: str = ""

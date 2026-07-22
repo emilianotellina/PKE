@@ -48,9 +48,9 @@ class CallGraphBuilder:
             )
 
 
-            self.graph.add_call(
-                function.name,
-                target
+            graph.add_call(
+                call.caller,
+                call.target
             )
 
 
