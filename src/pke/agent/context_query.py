@@ -13,16 +13,20 @@ from .context_cache import ContextCache
 from .project_fingerprint import ProjectFingerprint
 
 
+
 class ContextQuery:
 
 
     def __init__(
         self,
         project,
-        cache=None
+        cache=None,
+        repository=None
     ):
 
         self.csr = project
+
+        self.repository = repository
 
         self.engine = ContextEngine()
 
@@ -74,21 +78,7 @@ class ContextQuery:
 
 
 
-        visitor = KnowledgeCSRVisitor(
-            self.csr
-        )
-
-
-        walker = SemanticWalker(
-            self.csr,
-            visitor
-        )
-
-
-        walker.walk()
-
-
-        knowledge_project = visitor.project
+        knowledge_project = self._load_knowledge_project()
 
 
 
@@ -132,6 +122,7 @@ class ContextQuery:
         symbols = []
 
 
+
         for function in analysis["functions"]:
 
 
@@ -146,7 +137,11 @@ class ContextQuery:
 
                         name=function.name,
 
-                        calls=function.calls,
+                        calls=getattr(
+                            function,
+                            "calls",
+                            []
+                        ),
 
                         dependencies=[
 
@@ -154,7 +149,11 @@ class ContextQuery:
 
                             for item
 
-                            in function.dependencies
+                            in getattr(
+                                function,
+                                "dependencies",
+                                []
+                            )
 
                         ],
 
@@ -164,7 +163,11 @@ class ContextQuery:
 
                             for item
 
-                            in function.side_effects
+                            in getattr(
+                                function,
+                                "side_effects",
+                                []
+                            )
 
                         ]
 
@@ -224,10 +227,6 @@ class ContextQuery:
         )
 
 
-
-        #
-        # Il prompt finale è quello prodotto dal ContextEngine
-        #
 
         context.llm_context = engine_context["prompt"]
 
@@ -289,3 +288,50 @@ class ContextQuery:
 
 
         return result
+
+
+
+    def _load_knowledge_project(
+        self
+    ):
+
+
+        if self.repository is not None:
+
+
+            project_name = getattr(
+                self.csr,
+                "name",
+                None
+            )
+
+
+            if project_name is not None:
+
+
+                knowledge_project = self.repository.load_project(
+                    project_name
+                )
+
+
+                if knowledge_project is not None:
+
+                    return knowledge_project
+
+
+
+        visitor = KnowledgeCSRVisitor(
+            self.csr
+        )
+
+
+        walker = SemanticWalker(
+            self.csr,
+            visitor
+        )
+
+
+        walker.walk()
+
+
+        return visitor.project

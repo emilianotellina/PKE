@@ -6,6 +6,9 @@ from .package_writer import PackageWriter
 from .project_writer import ProjectWriter
 from .architecture_metrics import ArchitectureMetrics
 
+from pke.context.impact_builder import ImpactBuilder
+from pke.context.impact_analyzer import ImpactAnalyzer
+
 
 
 class KnowledgeGenerator:
@@ -19,6 +22,10 @@ class KnowledgeGenerator:
         self.output_path = Path(
             output_path
         )
+
+        self.impact_builder = ImpactBuilder()
+
+        self.impact_analyzer = ImpactAnalyzer()
 
 
 
@@ -39,6 +46,12 @@ class KnowledgeGenerator:
 
 
 
+        impact_graph = self.impact_builder.build(
+            project
+        )
+
+
+
         project_path = (
             self.output_path
             /
@@ -50,6 +63,7 @@ class KnowledgeGenerator:
             parents=True,
             exist_ok=True
         )
+
 
 
         #
@@ -80,6 +94,7 @@ class KnowledgeGenerator:
             )
 
 
+
             PackageWriter(
                 package_path
             ).write(
@@ -104,6 +119,7 @@ class KnowledgeGenerator:
                 )
 
 
+
                 FileWriter(
                     file_path
                 ).write(
@@ -114,14 +130,83 @@ class KnowledgeGenerator:
 
                 for symbol in file.symbols:
 
+
                     metric = metrics.get(
                         symbol.name
                     )
+
+
+
+                    risk = self._build_risk(
+                        metric
+                    )
+
+
+
+                    impact = self.impact_analyzer.analyze(
+                        impact_graph,
+                        symbol.name
+                    )
+
 
 
                     FunctionWriter(
                         file_path
                     ).write(
                         symbol,
-                        metric
+                        metric,
+                        risk,
+                        impact
                     )
+
+
+
+    def _build_risk(
+        self,
+        metric
+    ):
+
+
+        if metric is None:
+
+            return None
+
+
+
+        risks = []
+
+
+
+        if metric.fan_out > 5:
+
+            risks.append(
+                "high fan-out function"
+            )
+
+
+
+        if metric.complexity > 10:
+
+            risks.append(
+                "high complexity function"
+            )
+
+
+
+        if metric.criticality > 7:
+
+            risks.append(
+                "critical function"
+            )
+
+
+
+        if metric.instability > 0.7:
+
+            risks.append(
+                "unstable dependency"
+            )
+
+
+
+        return risks

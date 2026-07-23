@@ -19,7 +19,9 @@ class FunctionWriter:
     def write(
         self,
         function,
-        metric=None
+        metric=None,
+        risk=None,
+        impact=None
     ):
 
 
@@ -27,6 +29,12 @@ class FunctionWriter:
             self.output_path
             /
             f"{function.name}.md"
+        )
+
+
+        self.output_path.mkdir(
+            parents=True,
+            exist_ok=True
         )
 
 
@@ -104,6 +112,27 @@ class FunctionWriter:
 
 
         content.append(
+            "\n## Dependencies\n"
+        )
+
+
+        if function.dependencies:
+
+            for dependency in function.dependencies:
+
+                content.append(
+                    f"- {dependency.name}\n"
+                )
+
+        else:
+
+            content.append(
+                "- None\n"
+            )
+
+
+
+        content.append(
             "\n## Side Effects\n"
         )
 
@@ -126,14 +155,81 @@ class FunctionWriter:
 
         if metric:
 
+
             content.append(
                 "\n## Metrics\n"
             )
 
-            for key,value in metric.items():
+
+            for key, value in metric.items():
 
                 content.append(
                     f"\n{key}:\n{value}\n"
+                )
+
+
+
+        if risk:
+
+
+            content.append(
+                "\n## Risk\n"
+            )
+
+
+            if isinstance(risk, list):
+
+                for item in risk:
+
+                    content.append(
+                        f"- {item}\n"
+                    )
+
+            else:
+
+                content.append(
+                    f"- {risk}\n"
+                )
+
+
+
+        if impact:
+
+
+            content.append(
+                "\n## Impact\n"
+            )
+
+
+            if isinstance(impact, dict):
+
+                affected = impact.get(
+                    "affected",
+                    []
+                )
+
+                if affected:
+
+                    content.append(
+                        "\nAffected Functions:\n"
+                    )
+
+                    for item in affected:
+
+                        content.append(
+                            f"- {item}\n"
+                        )
+
+                else:
+
+                    content.append(
+                        "- None\n"
+                    )
+
+            else:
+
+                content.append(
+                    f"- {impact}\n"
                 )
 
 
