@@ -13,7 +13,6 @@ from .context_cache import ContextCache
 from .project_fingerprint import ProjectFingerprint
 
 
-
 class ContextQuery:
 
 
@@ -226,6 +225,10 @@ class ContextQuery:
 
 
 
+        #
+        # Il prompt finale è quello prodotto dal ContextEngine
+        #
+
         context.llm_context = engine_context["prompt"]
 
 
@@ -249,6 +252,8 @@ class ContextQuery:
             target=target,
 
             context=context,
+
+            engine_context=engine_context,
 
             functions=analysis["functions"],
 

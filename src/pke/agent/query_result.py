@@ -13,6 +13,10 @@ class QueryResult:
     context: object
 
 
+    engine_context: dict | None = None
+
+
+
     functions: list = field(
         default_factory=list
     )
@@ -55,6 +59,52 @@ class QueryResult:
 
 
 
+    def optimized_context(
+        self
+    ):
+
+        if self.engine_context is None:
+
+            return None
+
+
+        return self.engine_context.get(
+            "context"
+        )
+
+
+
+    def prompt(
+        self
+    ):
+
+        if self.engine_context is None:
+
+            return None
+
+
+        return self.engine_context.get(
+            "prompt"
+        )
+
+
+
+    def ranking(
+        self
+    ):
+
+        if self.engine_context is None:
+
+            return []
+
+
+        return self.engine_context.get(
+            "ranking",
+            []
+        )
+
+
+
     def to_dict(
         self
     ):
@@ -67,6 +117,7 @@ class QueryResult:
             "target":
                 self.target,
 
+
             "impact":
                 (
                     self.impact.to_dict()
@@ -74,6 +125,35 @@ class QueryResult:
                     if self.impact
 
                     else None
-                )
+                ),
+
+
+            "engine_context":
+
+                {
+
+                    "prompt":
+
+                        self.prompt(),
+
+
+                    "ranking":
+
+                        self.ranking(),
+
+
+                    "context":
+
+                        (
+
+                            self.optimized_context().to_dict()
+
+                            if self.optimized_context()
+
+                            else None
+
+                        )
+
+                }
 
         }
