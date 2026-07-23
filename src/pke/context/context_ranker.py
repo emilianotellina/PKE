@@ -17,7 +17,8 @@ class ContextRanker:
         self,
         context,
         target,
-        graph=None
+        graph=None,
+        risks=None
     ):
 
 
@@ -26,13 +27,15 @@ class ContextRanker:
             return self._rank_graph(
                 context,
                 target,
-                graph
+                graph,
+                risks
             )
 
 
         return self._rank_legacy(
             context,
-            target
+            target,
+            risks
         )
 
 
@@ -41,7 +44,8 @@ class ContextRanker:
         self,
         context,
         target,
-        graph
+        graph,
+        risks=None
     ):
 
 
@@ -61,16 +65,23 @@ class ContextRanker:
             if symbol.name in costs:
 
 
+                score = self._score(
+                    costs[symbol.name]
+                )
+
+
+                score = self._apply_risk_bonus(
+                    symbol,
+                    score,
+                    risks
+                )
+
+
                 result.append(
 
                     (
-
                         symbol,
-
-                        self._score(
-                            costs[symbol.name]
-                        )
-
+                        score
                     )
 
                 )
@@ -184,7 +195,8 @@ class ContextRanker:
     def _rank_legacy(
         self,
         context,
-        target
+        target,
+        risks=None
     ):
 
 
@@ -216,7 +228,11 @@ class ContextRanker:
 
             (
                 target_symbol,
-                100
+                self._apply_risk_bonus(
+                    target_symbol,
+                    100,
+                    risks
+                )
             )
 
         )
@@ -239,7 +255,11 @@ class ContextRanker:
 
                         (
                             symbol,
-                            80
+                            self._apply_risk_bonus(
+                                symbol,
+                                80,
+                                risks
+                            )
                         )
 
                     )
@@ -253,7 +273,11 @@ class ContextRanker:
 
                 (
                     dependency,
-                    70
+                    self._apply_risk_bonus(
+                        dependency,
+                        70,
+                        risks
+                    )
                 )
 
             )
@@ -267,7 +291,11 @@ class ContextRanker:
 
                 (
                     target_symbol,
-                    60
+                    self._apply_risk_bonus(
+                        target_symbol,
+                        60,
+                        risks
+                    )
                 )
 
             )
@@ -277,6 +305,59 @@ class ContextRanker:
         return self._remove_duplicates(
             result
         )
+
+
+
+    def _apply_risk_bonus(
+        self,
+        symbol,
+        score,
+        risks
+    ):
+
+
+        if not risks:
+
+            return score
+
+
+
+        name = getattr(
+            symbol,
+            "name",
+            str(symbol)
+        )
+
+
+
+        for risk in risks:
+
+
+            if name in risk:
+
+
+                if "critical" in risk:
+
+                    score += 20
+
+
+                elif "side effect" in risk:
+
+                    score += 10
+
+
+                elif "dependency" in risk:
+
+                    score += 5
+
+
+                else:
+
+                    score += 5
+
+
+
+        return score
 
 
 

@@ -5,7 +5,6 @@ from .context_graph import ContextGraph
 class ContextExpander:
 
 
-
     def expand(
         self,
         context
@@ -19,10 +18,15 @@ class ContextExpander:
         for symbol in context.symbols:
 
 
-            node = graph.get_or_create(
+            graph.get_or_create(
                 symbol.name,
                 symbol.type
             )
+
+
+
+        for symbol in context.symbols:
+
 
 
             #
@@ -43,9 +47,24 @@ class ContextExpander:
                 )
 
 
+                #
+                # Reverse relation
+                #
+
+                graph.add_relation(
+
+                    call,
+
+                    "called_by",
+
+                    symbol.name
+
+                )
+
+
 
             #
-            # Called by
+            # Existing called_by
             #
 
             for caller in symbol.called_by:
@@ -70,13 +89,24 @@ class ContextExpander:
             for dependency in symbol.dependencies:
 
 
+                dependency_name = getattr(
+
+                    dependency,
+
+                    "name",
+
+                    str(dependency)
+
+                )
+
+
                 graph.add_relation(
 
                     symbol.name,
 
                     "depends_on",
 
-                    dependency
+                    dependency_name
 
                 )
 

@@ -32,6 +32,7 @@ class ContextEngine:
         call_graph=None,
         dependency_graph=None,
         metrics=None,
+        risks=None,
         budget=300
     ):
 
@@ -54,7 +55,8 @@ class ContextEngine:
         ranked = self.ranker.rank(
             context,
             target,
-            graph=graph
+            graph=graph,
+            risks=risks
         )
 
 

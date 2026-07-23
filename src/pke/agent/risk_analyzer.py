@@ -8,70 +8,204 @@ class RiskAnalyzer:
         metrics=None
     ):
 
+
         risks = []
 
 
-        if metrics is None:
+
+        if metrics is not None:
+
+
+            function_metrics = metrics.get(
+                target,
+                {}
+            )
+
+
+            fan_out = function_metrics.get(
+                "fan_out",
+                0
+            )
+
+
+            complexity = function_metrics.get(
+                "complexity",
+                0
+            )
+
+
+            criticality = function_metrics.get(
+                "criticality",
+                0
+            )
+
+
+            instability = function_metrics.get(
+                "instability",
+                0
+            )
+
+
+            if fan_out > 5:
+
+                risks.append(
+                    "high fan-out function"
+                )
+
+
+            if complexity > 10:
+
+                risks.append(
+                    "high complexity function"
+                )
+
+
+            if criticality > 7:
+
+                risks.append(
+                    "critical function"
+                )
+
+
+            if instability > 0.7:
+
+                risks.append(
+                    "unstable dependency"
+                )
+
+
+
+        function = self._find_function(
+            project,
+            target
+        )
+
+
+
+        if function is None:
 
             return risks
 
 
-        function_metrics = metrics.get(
-            target,
-            {}
+
+        calls = getattr(
+            function,
+            "calls",
+            []
         )
 
 
-        fan_out = function_metrics.get(
-            "fan_out",
-            0
-        )
 
-
-        complexity = function_metrics.get(
-            "complexity",
-            0
-        )
-
-
-        criticality = function_metrics.get(
-            "criticality",
-            0
-        )
-
-
-        instability = function_metrics.get(
-            "instability",
-            0
-        )
-
-
-        if fan_out > 5:
+        if len(calls) > 5:
 
             risks.append(
                 "high fan-out function"
             )
 
 
-        if complexity > 10:
+
+        called_by = getattr(
+            function,
+            "called_by",
+            []
+        )
+
+
+
+        if len(called_by) > 10:
 
             risks.append(
-                "high complexity function"
+                "high fan-in function"
             )
 
 
-        if criticality > 7:
+
+        dependencies = getattr(
+            function,
+            "dependencies",
+            []
+        )
+
+
+
+        if len(dependencies) > 5:
 
             risks.append(
-                "critical function"
+                "many dependencies"
             )
 
 
-        if instability > 0.7:
+
+        side_effects = getattr(
+            function,
+            "side_effects",
+            []
+        )
+
+
+
+        if side_effects:
 
             risks.append(
-                "unstable dependency"
+                "function has side effects"
             )
 
 
-        return risks
+
+        return self._unique(
+            risks
+        )
+
+
+
+    def _find_function(
+        self,
+        project,
+        target
+    ):
+
+
+        functions = getattr(
+            project,
+            "functions",
+            []
+        )
+
+
+        for function in functions:
+
+
+            if getattr(
+                function,
+                "name",
+                None
+            ) == target:
+
+                return function
+
+
+
+        return None
+
+
+
+    def _unique(
+        self,
+        items
+    ):
+
+
+        result = []
+
+
+        for item in items:
+
+
+            if item not in result:
+
+                result.append(
+                    item
+                )
+
+
+        return result

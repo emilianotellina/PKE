@@ -8,7 +8,6 @@ from .query_analyzer import QueryAnalyzer
 from .risk_analyzer import RiskAnalyzer
 from .impact import ImpactAnalyzer
 from .query_result import QueryResult
-from .prompt import AgentPrompt
 from .context_cache import ContextCache
 from .project_fingerprint import ProjectFingerprint
 
@@ -22,7 +21,6 @@ class ContextQuery:
         project,
         cache=None
     ):
-
 
         self.csr = project
 
@@ -79,16 +77,13 @@ class ContextQuery:
         )
 
 
-
         walker = SemanticWalker(
             self.csr,
             visitor
         )
 
 
-
         walker.walk()
-
 
 
         knowledge_project = visitor.project
@@ -120,12 +115,10 @@ class ContextQuery:
         risks = []
 
 
-
         if options.get(
             "include_risks",
             True
         ):
-
 
             risks = self.risk_analyzer.analyze(
                 knowledge_project,
@@ -137,7 +130,6 @@ class ContextQuery:
         symbols = []
 
 
-
         for function in analysis["functions"]:
 
 
@@ -145,7 +137,6 @@ class ContextQuery:
                 function,
                 "name"
             ):
-
 
                 symbols.append(
 
@@ -181,7 +172,6 @@ class ContextQuery:
 
 
             else:
-
 
                 symbols.append(
 
@@ -225,7 +215,7 @@ class ContextQuery:
 
                 "llm_context":
 
-                    engine_context["prompt"]
+                    engine_context
 
             }
 
@@ -233,17 +223,11 @@ class ContextQuery:
 
 
 
-        prompt = AgentPrompt(
-
-            task=task,
-
-            target=target,
-
-            context=context
-
-        )
-
-
+        #
+        # Il prompt viene prodotto dal ContextEngine.
+        # Contiene il contesto ottimizzato dopo ranking/compressione.
+        # Non deve essere rigenerato qui.
+        #
 
         context.llm_context = engine_context["prompt"]
 
