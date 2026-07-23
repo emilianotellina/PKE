@@ -1,12 +1,13 @@
 from pke.context.context_engine import ContextEngine
 from pke.context.context import AIContext, SymbolContext
+from pke.context.impact_builder import ImpactBuilder
+from pke.context.impact_analyzer import ImpactAnalyzer
 
 from pke.csr.semantic_walker import SemanticWalker
 from pke.knowledge.csr_visitor import KnowledgeCSRVisitor
 
 from .query_analyzer import QueryAnalyzer
 from .risk_analyzer import RiskAnalyzer
-from .impact import ImpactAnalyzer
 from .query_result import QueryResult
 from .context_cache import ContextCache
 from .project_fingerprint import ProjectFingerprint
@@ -29,6 +30,8 @@ class ContextQuery:
         self.analyzer = QueryAnalyzer()
 
         self.risk_analyzer = RiskAnalyzer()
+
+        self.impact_builder = ImpactBuilder()
 
         self.impact_analyzer = ImpactAnalyzer()
 
@@ -223,13 +226,19 @@ class ContextQuery:
 
 
 
-        #
-        # Il prompt viene prodotto dal ContextEngine.
-        # Contiene il contesto ottimizzato dopo ranking/compressione.
-        # Non deve essere rigenerato qui.
-        #
-
         context.llm_context = engine_context["prompt"]
+
+
+
+        impact_graph = self.impact_builder.build(
+            knowledge_project
+        )
+
+
+        impact = self.impact_analyzer.analyze(
+            impact_graph,
+            target
+        )
 
 
 
@@ -253,13 +262,7 @@ class ContextQuery:
 
             risks=risks,
 
-            impact=self.impact_analyzer.analyze(
-
-                knowledge_project,
-
-                target
-
-            )
+            impact=impact
 
         )
 
