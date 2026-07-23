@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PKE Agent Protocol v1.0",
+  "type": "object",
+
+  "required": [
+    "protocol_version",
+    "task",
+    "target",
+    "context",
+    "candidates"
+  ],
+
+  "properties": {
+
+    "protocol_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+
+
+    "task": {
+      "type": "string"
+    },
+
+
+    "target": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+
+
+    "candidates": {
+
+      "type": "array",
+
+      "items": {
+
+        "type": "object",
+
+        "required": [
+          "symbol",
+          "score"
+        ],
+
+        "properties": {
+
+          "symbol": {
+            "type": "string"
+          },
+
+          "score": {
+            "type": "number"
+          }
+
+        }
+
+      }
+
+    },
+
+
+    "context": {
+      "type": "object"
+    },
+
+
+    "functions": {
+      "type": "array"
+    },
+
+
+    "files": {
+      "type": "array"
+    },
+
+
+    "packages": {
+      "type": "array"
+    },
+
+
+    "dependencies": {
+      "type": "array"
+    },
+
+
+    "side_effects": {
+      "type": "array"
+    },
+
+
+    "risks": {
+      "type": "array"
+    },
+
+
+    "impact": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+
+  }
+
+}

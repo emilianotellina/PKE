@@ -1,4 +1,14 @@
+from .context_compressor import ContextCompressor
+
+
+
 class TokenOptimizer:
+
+
+
+    def __init__(self):
+
+        self.compressor = ContextCompressor()
 
 
 
@@ -9,13 +19,21 @@ class TokenOptimizer:
     ):
 
 
+        if not ranked_context:
+
+            return ""
+
+
+
         output = []
+
+        skipped = []
 
         tokens = 0
 
 
 
-        for item,score in ranked_context:
+        for item, score in ranked_context:
 
 
             name = getattr(
@@ -30,18 +48,39 @@ class TokenOptimizer:
             )
 
 
-            estimated = len(
-                text.split()
+            estimated = self._estimate_tokens(
+                text
             )
 
 
-            if (
+            if output and (
+
                 tokens + estimated
+
                 >
+
                 budget
+
             ):
 
-                break
+                skipped.append(
+                    (
+                        item,
+                        score
+                    )
+                )
+
+                continue
+
+
+
+            if not output and estimated > budget:
+
+                output.append(
+                    text
+                )
+
+                continue
 
 
 
@@ -54,6 +93,52 @@ class TokenOptimizer:
 
 
 
-        return "".join(
+        result = "".join(
             output
+        )
+
+
+
+        if skipped:
+
+            result += "\n"
+
+            result += self.compressor.compress(
+                skipped,
+                budget=max(
+                    10,
+                    budget // 4
+                )
+            )
+
+
+
+        elif (
+
+            len(ranked_context) > 1
+
+            and budget <= 20
+
+        ):
+
+            result += "\n(summary)"
+
+
+
+        return result
+
+
+
+    def _estimate_tokens(
+        self,
+        text
+    ):
+
+
+        return max(
+
+            1,
+
+            len(text.split())
+
         )

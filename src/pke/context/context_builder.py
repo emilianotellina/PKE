@@ -24,38 +24,26 @@ class ContextBuilder:
 
 
 
-        #
-        # indice metriche
-        #
-
         metrics_index = {}
 
         if metrics:
 
-            for name,value in metrics.items():
+            for name, value in metrics.items():
 
                 metrics_index[name] = value
 
 
-
-        #
-        # indice call graph
-        #
 
         call_index = {}
 
         if call_graph:
 
 
-            for name,node in call_graph.nodes.items():
+            for name, node in call_graph.nodes.items():
 
                 call_index[name] = node
 
 
-
-        #
-        # costruzione simboli
-        #
 
         for package in project.packages:
 
@@ -73,7 +61,7 @@ class ContextBuilder:
 
 
                     #
-                    # chiamate
+                    # chiamate dirette
                     #
 
                     symbol.calls.extend(
@@ -83,44 +71,93 @@ class ContextBuilder:
 
 
                     #
-                    # chiamato da
+                    # target risolti
                     #
 
-                    if function.name in call_index:
+                    if hasattr(
+                        function,
+                        "call_targets"
+                    ):
 
-
-                        symbol.called_by.extend(
-                            call_index[
-                                function.name
-                            ].callers
+                        symbol.calls.extend(
+                            function.call_targets
                         )
 
 
 
                     #
-                    # effetti
+                    # chiamatori
+                    #
+
+                    if function.name in call_index:
+
+
+                        node = call_index[
+                            function.name
+                        ]
+
+
+                        if hasattr(
+                            node,
+                            "callers"
+                        ):
+
+                            symbol.called_by.extend(
+                                node.callers
+                            )
+
+
+
+                    #
+                    # chiamatori dal modello knowledge
+                    #
+
+                    if hasattr(
+                        function,
+                        "called_by"
+                    ):
+
+                        symbol.called_by.extend(
+                            function.called_by
+                        )
+
+
+
+                    #
+                    # side effects
                     #
 
                     symbol.side_effects.extend(
+
                         [
                             effect.type
+
                             for effect
+
                             in function.side_effects
+
                         ]
+
                     )
 
 
 
                     #
-                    # dipendenze
+                    # dependencies
                     #
 
                     symbol.dependencies.extend(
+
                         [
+
                             dependency.type
+
                             for dependency
+
                             in function.dependencies
+
                         ]
+
                     )
 
 
@@ -130,6 +167,7 @@ class ContextBuilder:
                     #
 
                     if function.name in metrics_index:
+
 
                         metric = metrics_index[
                             function.name
@@ -154,28 +192,52 @@ class ContextBuilder:
 
 
 
+                    #
+                    # metadata architetturale
+                    #
+
+                    symbol.metrics.update(
+
+                        {
+
+                            "package":
+                                package.name,
+
+                            "file":
+                                file.name
+
+                        }
+
+                    )
+
+
+
                     context.symbols.append(
                         symbol
                     )
 
 
 
-        #
-        # statistiche progetto
-        #
-
         context.architecture = {
 
             "packages":
+
                 len(project.packages),
 
+
             "files":
+
                 sum(
-                    len(p.files)
-                    for p in project.packages
+
+                    len(package.files)
+
+                    for package in project.packages
+
                 ),
 
+
             "functions":
+
                 len(context.symbols)
 
         }

@@ -1,19 +1,27 @@
 from .context_builder import ContextBuilder
 from .context_ranker import ContextRanker
 from .token_optimizer import TokenOptimizer
+from .context_formatter import ContextFormatter
+from .context_expander import ContextExpander
+from .optimized_context import OptimizedContext
 
 
 
 class ContextEngine:
 
 
+
     def __init__(self):
 
         self.builder = ContextBuilder()
 
+        self.expander = ContextExpander()
+
         self.ranker = ContextRanker()
 
         self.optimizer = TokenOptimizer()
+
+        self.formatter = ContextFormatter()
 
 
 
@@ -37,16 +45,30 @@ class ContextEngine:
 
 
 
-        ranked = self.ranker.rank(
-            context,
-            target
+        graph = self.expander.expand(
+            context
         )
 
 
 
-        optimized = self.optimizer.optimize(
+        ranked = self.ranker.rank(
+            context,
+            target,
+            graph=graph
+        )
+
+
+
+        optimized = self._optimize(
             ranked,
+            target,
             budget
+        )
+
+
+
+        prompt = self.formatter.format_optimized(
+            optimized
         )
 
 
@@ -54,16 +76,23 @@ class ContextEngine:
         return {
 
             "target":
+
                 target,
 
+
             "context":
+
                 optimized,
 
+
             "ranking":
+
                 [
+
                     {
 
                         "symbol":
+
                             getattr(
                                 item,
                                 "name",
@@ -71,11 +100,108 @@ class ContextEngine:
                             ),
 
                         "score":
+
                             score
 
                     }
 
                     for item,score in ranked
-                ]
+
+                ],
+
+
+            "structured":
+
+                context.to_dict(),
+
+
+            "prompt":
+
+                prompt,
+
+
+            "graph":
+
+                graph.nodes
 
         }
+
+
+
+    def _optimize(
+        self,
+        ranked,
+        target,
+        budget
+    ):
+
+
+        result = OptimizedContext(
+            target=target
+        )
+
+
+        tokens = 0
+
+
+
+        for item,score in ranked:
+
+
+            name = getattr(
+                item,
+                "name",
+                str(item)
+            )
+
+
+            cost = len(
+                name.split()
+            ) + 1
+
+
+
+            if (
+
+                tokens + cost
+
+                >
+
+                budget
+
+            ):
+
+                break
+
+
+
+            result.add_symbol(
+                name,
+                score
+            )
+
+
+            tokens += cost
+
+
+
+        result.token_count = tokens
+
+
+
+        if len(result.symbols) < len(ranked):
+
+            result.summary = self.optimizer.compressor.compress(
+
+                ranked[len(result.symbols):],
+
+                budget=max(
+                    10,
+                    budget // 4
+                )
+
+            )
+
+
+
+        return result
