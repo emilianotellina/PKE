@@ -238,7 +238,8 @@ class ContextFormatter:
 
     def format_optimized(
         self,
-        optimized
+        optimized,
+        profile=None
     ):
 
 
@@ -259,8 +260,11 @@ class ContextFormatter:
 
         for item in optimized.symbols:
 
+
             lines.append(
+
                 f"{item['score']}: {item['symbol']}"
+
             )
 
 
@@ -287,6 +291,44 @@ class ContextFormatter:
                 optimized.summary
 
             )
+
+
+
+        if profile is not None:
+
+
+            detail_level = getattr(
+
+                profile,
+
+                "detail_level",
+
+                "normal"
+
+            )
+
+
+
+            if detail_level == "high":
+
+
+                document.add_section(
+
+                    "Metrics",
+
+                    "\n".join(
+
+                        [
+
+                            f"Token count: {optimized.token_count}",
+
+                            f"Symbols count: {len(optimized.symbols)}"
+
+                        ]
+
+                    )
+
+                )
 
 
 

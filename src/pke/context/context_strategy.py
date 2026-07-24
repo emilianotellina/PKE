@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from .context_profile import ContextProfile
+
 
 
 @dataclass
@@ -17,6 +19,8 @@ class ContextStrategy:
     include_side_effects: bool = False
 
     max_depth: int = 1
+
+
 
 
 
@@ -40,10 +44,6 @@ class ContextStrategyAnalyzer:
 
 
 
-        #
-        # spiegazione / analisi
-        #
-
         if any(
 
             word in task
@@ -62,6 +62,7 @@ class ContextStrategyAnalyzer:
 
         ):
 
+
             strategy.include_docs = True
 
             strategy.expand_dependencies = True
@@ -69,10 +70,6 @@ class ContextStrategyAnalyzer:
             strategy.max_depth = 2
 
 
-
-        #
-        # bug / fix
-        #
 
         if any(
 
@@ -92,6 +89,7 @@ class ContextStrategyAnalyzer:
 
         ):
 
+
             strategy.expand_callers = True
 
             strategy.include_side_effects = True
@@ -101,10 +99,6 @@ class ContextStrategyAnalyzer:
             strategy.max_depth = 3
 
 
-
-        #
-        # refactoring
-        #
 
         if any(
 
@@ -124,6 +118,7 @@ class ContextStrategyAnalyzer:
 
         ):
 
+
             strategy.expand_callers = True
 
             strategy.include_tests = True
@@ -131,10 +126,6 @@ class ContextStrategyAnalyzer:
             strategy.max_depth = 2
 
 
-
-        #
-        # default conservativo
-        #
 
         if strategy.max_depth == 1:
 

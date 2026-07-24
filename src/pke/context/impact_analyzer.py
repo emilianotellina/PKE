@@ -19,21 +19,13 @@ class ImpactAnalyzer:
 
             return {
 
-                "target":
+                "target": target,
 
-                    target,
+                "affected": [],
 
-                "affected":
+                "paths": [],
 
-                    [],
-
-                "paths":
-
-                    [],
-
-                "risk_level":
-
-                    "low"
+                "risk_level": "low"
 
             }
 
@@ -85,6 +77,10 @@ class ImpactAnalyzer:
 
 
 
+            relations = graph.nodes[current].relations
+
+
+
             for relation in (
 
                 "called_by",
@@ -94,12 +90,9 @@ class ImpactAnalyzer:
             ):
 
 
-                for node in graph.get_relations(
-
-                    current,
-
-                    relation
-
+                for node in relations.get(
+                    relation,
+                    []
                 ):
 
 
@@ -111,47 +104,30 @@ class ImpactAnalyzer:
 
 
                     paths.append(
-
                         path + [node]
-
                     )
 
 
                     queue.append(
-
                         (
-
                             node,
-
                             path + [node]
-
                         )
-
                     )
 
 
 
         return {
 
-            "target":
+            "target": target,
 
-                target,
+            "affected": affected,
 
-            "affected":
+            "paths": paths,
 
-                affected,
-
-            "paths":
-
-                paths,
-
-            "risk_level":
-
-                self._risk_level(
-
-                    len(affected)
-
-                )
+            "risk_level": self._risk_level(
+                len(affected)
+            )
 
         }
 
@@ -168,9 +144,11 @@ class ImpactAnalyzer:
             return "low"
 
 
+
         if count <= 3:
 
             return "medium"
+
 
 
         return "high"

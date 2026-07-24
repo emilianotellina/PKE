@@ -38,7 +38,8 @@ class ContextEngine:
         risks=None,
         retrieved_documents=None,
         budget=300,
-        strategy=None
+        strategy=None,
+        profile=None
     ):
 
 
@@ -53,7 +54,8 @@ class ContextEngine:
 
         graph = self.expander.expand(
             context,
-            strategy
+            strategy=strategy,
+            profile=profile
         )
 
 
@@ -76,9 +78,17 @@ class ContextEngine:
 
         ranked = self.ranker.rank(
 
-            fused_context,
+            context,
 
-            target
+            target,
+
+            graph=graph,
+
+            risks=risks,
+
+            retrieved_documents=retrieved_documents,
+
+            profile=profile
 
         )
 
@@ -190,10 +200,16 @@ class ContextEngine:
 
             "retrieved_documents":
 
-                retrieved_documents
+                retrieved_documents,
 
+
+
+            "profile":
+
+                profile
 
         }
+
 
 
     def _append_retrieved_documents(
@@ -202,6 +218,7 @@ class ContextEngine:
         documents
     ):
 
+
         section = [
 
             "\n",
@@ -209,6 +226,7 @@ class ContextEngine:
             "## Retrieved Knowledge\n"
 
         ]
+
 
 
         for document in documents:
@@ -284,14 +302,20 @@ class ContextEngine:
 
 
             name = getattr(
+
                 item,
+
                 "name",
+
                 str(item)
+
             )
 
 
             cost = len(
+
                 name.split()
+
             ) + 1
 
 
@@ -311,8 +335,11 @@ class ContextEngine:
 
 
             result.add_symbol(
+
                 name,
+
                 score
+
             )
 
 

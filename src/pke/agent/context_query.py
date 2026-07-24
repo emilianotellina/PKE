@@ -3,6 +3,7 @@ from pke.context.context import AIContext, SymbolContext
 from pke.context.impact_builder import ImpactBuilder
 from pke.context.impact_analyzer import ImpactAnalyzer
 from pke.context.context_strategy import ContextStrategyAnalyzer
+from pke.context.agent_selector import AgentSelector
 
 from pke.knowledge.retriever import KnowledgeRetriever
 from pke.knowledge.semantic_retriever import SemanticRetriever
@@ -19,7 +20,6 @@ from .project_fingerprint import ProjectFingerprint
 
 
 class ContextQuery:
-
 
 
     def __init__(
@@ -49,6 +49,8 @@ class ContextQuery:
 
         self.strategy_analyzer = ContextStrategyAnalyzer()
 
+        self.agent_selector = AgentSelector()
+
         self.retriever = None
 
         self.semantic_retriever = None
@@ -60,7 +62,6 @@ class ContextQuery:
             self.retriever = KnowledgeRetriever(
                 repository
             )
-
 
             self.semantic_retriever = SemanticRetriever(
                 repository
@@ -82,8 +83,36 @@ class ContextQuery:
 
 
 
-        strategy = self.strategy_analyzer.analyze(
-            task
+        profile = self._resolve_profile(
+            task,
+            options
+        )
+
+
+        strategy = None
+
+
+        if profile is None:
+
+            strategy = self.strategy_analyzer.analyze(
+                task
+            )
+
+
+
+        cache_options = dict(
+            options
+        )
+
+
+        cache_options["profile"] = (
+
+            profile.name
+
+            if profile is not None
+
+            else "strategy"
+
         )
 
 
@@ -98,7 +127,7 @@ class ContextQuery:
             fingerprint,
             task,
             target,
-            options
+            cache_options
         )
 
 
@@ -124,7 +153,8 @@ class ContextQuery:
             target,
             options,
             retrieval_context,
-            strategy
+            strategy,
+            profile
         )
 
 
@@ -157,7 +187,8 @@ class ContextQuery:
             engine_context,
             analysis,
             risks,
-            symbols
+            symbols,
+            profile
         )
 
 
@@ -186,12 +217,90 @@ class ContextQuery:
             fingerprint,
             task,
             target,
-            options,
+            cache_options,
             result
         )
 
 
         return result
+
+
+
+    def _resolve_profile(
+        self,
+        task,
+        options
+    ):
+
+
+        explicit_profile = options.get(
+            "profile"
+        )
+
+
+        if explicit_profile is not None:
+
+
+            if hasattr(
+                explicit_profile,
+                "name"
+            ):
+
+                return explicit_profile
+
+
+
+            agent = self.agent_selector.registry.get(
+                explicit_profile
+            )
+
+
+            if agent is not None:
+
+                return agent.context_profile
+
+
+
+        explicit_agent = options.get(
+            "agent"
+        )
+
+
+        if explicit_agent is not None:
+
+
+            if hasattr(
+                explicit_agent,
+                "context_profile"
+            ):
+
+                return explicit_agent.context_profile
+
+
+
+            agent = self.agent_selector.registry.get(
+                explicit_agent
+            )
+
+
+            if agent is not None:
+
+                return agent.context_profile
+
+
+
+        agent = self.agent_selector.select(
+            task
+        )
+
+
+        if agent is not None:
+
+            return agent.context_profile
+
+
+
+        return None
 
 
 
@@ -239,7 +348,8 @@ class ContextQuery:
         target,
         options,
         retrieval_context,
-        strategy
+        strategy,
+        profile
     ):
 
 
@@ -256,7 +366,9 @@ class ContextQuery:
 
             retrieved_documents=retrieval_context,
 
-            strategy=strategy
+            strategy=strategy,
+
+            profile=profile
 
         )
 
@@ -303,18 +415,13 @@ class ContextQuery:
         analysis
     ):
 
-
         symbols = []
 
 
         for function in analysis["functions"]:
 
 
-            if hasattr(
-                function,
-                "name"
-            ):
-
+            if hasattr(function, "name"):
 
                 symbols.append(
 
@@ -332,9 +439,7 @@ class ContextQuery:
 
                             item.name
 
-                            for item
-
-                            in getattr(
+                            for item in getattr(
                                 function,
                                 "dependencies",
                                 []
@@ -346,9 +451,7 @@ class ContextQuery:
 
                             item.expression
 
-                            for item
-
-                            in getattr(
+                            for item in getattr(
                                 function,
                                 "side_effects",
                                 []
@@ -364,11 +467,9 @@ class ContextQuery:
             else:
 
                 symbols.append(
-
                     SymbolContext(
                         name=function
                     )
-
                 )
 
 
@@ -384,7 +485,8 @@ class ContextQuery:
         engine_context,
         analysis,
         risks,
-        symbols
+        symbols,
+        profile
     ):
 
 
@@ -411,6 +513,16 @@ class ContextQuery:
                 "task": task,
 
                 "target": target,
+
+                "profile": (
+
+                    profile.to_dict()
+
+                    if profile is not None
+
+                    else None
+
+                ),
 
                 "llm_context": engine_context
 

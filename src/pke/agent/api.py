@@ -5,6 +5,8 @@ from .query_router import QueryRouter
 from .candidate import QueryCandidate
 from .context_cache import ContextCache
 
+from pke.context.agent_selector import AgentSelector
+
 
 
 class AgentAPI:
@@ -12,14 +14,19 @@ class AgentAPI:
 
     def __init__(
         self,
-        project
+        project,
+        profile=None
     ):
 
         self.project = project
 
+        self.profile = profile
+
         self.router = QueryRouter()
 
         self.cache = ContextCache()
+
+        self.agent_selector = AgentSelector()
 
 
 
@@ -28,12 +35,12 @@ class AgentAPI:
         target
     ):
 
-        return len(
+        return bool(
             self.router.find_symbol(
                 self.project,
                 target
             )
-        ) > 0
+        )
 
 
 
@@ -71,13 +78,50 @@ class AgentAPI:
 
 
 
+    def _resolve_agent(
+        self,
+        task
+    ):
+
+        return self.agent_selector.select(
+            task
+        )
+
+
+
+    def _apply_profile(
+        self,
+        options,
+        agent
+    ):
+
+        options = dict(
+            options or {}
+        )
+
+
+        if "profile" not in options:
+
+            if self.profile is not None:
+
+                options["profile"] = self.profile
+
+
+            elif agent is not None:
+
+                options["profile"] = agent.context_profile
+
+
+        return options
+
+
+
     def query(
         self,
         task,
         target=None,
         options=None
     ):
-
 
         error = self._validate(
             task,
@@ -91,6 +135,17 @@ class AgentAPI:
 
 
 
+        agent = self._resolve_agent(
+            task
+        )
+
+
+        options = self._apply_profile(
+            options,
+            agent
+        )
+
+
         candidates = self.router.route(
             self.project,
             task
@@ -98,20 +153,7 @@ class AgentAPI:
 
 
 
-        if target is None:
-
-
-            if not candidates:
-
-                return AgentErrorResponse(
-
-                    AgentError(
-                        "TARGET_NOT_FOUND",
-                        "No matching target found"
-                    )
-
-                )
-
+        if target is None and candidates:
 
             target = candidates[0]["symbol"]
 
@@ -140,6 +182,22 @@ class AgentAPI:
             target=result.target,
 
             context=result.context,
+
+            agent=(
+
+                agent.name
+                if agent
+                else None
+
+            ),
+
+            profile=(
+
+                agent.context_profile.name
+                if agent
+                else None
+
+            ),
 
             candidates=[
 
@@ -180,11 +238,8 @@ class AgentAPI:
         options=None
     ):
 
-        response = self.query(
+        return self.query(
             task,
             target,
             options
-        )
-
-
-        return response.to_json()
+        ).to_json()

@@ -1,4 +1,5 @@
 from .context_compressor import ContextCompressor
+from .optimized_context import OptimizedContext
 
 
 
@@ -15,21 +16,146 @@ class TokenOptimizer:
     def optimize(
         self,
         ranked_context,
-        budget=300
+        target=None,
+        budget=300,
+        profile=None
     ):
+
+
+        optimized = self._optimize_context(
+
+            ranked_context,
+
+            target,
+
+            budget,
+
+            profile
+
+        )
+
+
+        #
+        # Nuovo comportamento:
+        # con profile ritorniamo oggetto strutturato
+        #
+
+        if profile is not None:
+
+            return optimized
+
+
+
+        #
+        # Compatibilità legacy:
+        # ritorniamo stringa
+        #
+
+        lines = []
+
+
+        for item in optimized.symbols:
+
+
+            lines.append(
+
+                f"{item['score']}: {item['symbol']}"
+
+            )
+
+
+        result = "\n".join(
+            lines
+        )
+
+
+        if optimized.summary:
+
+
+            result += "\n\n"
+
+            result += optimized.summary
+
+
+        elif len(ranked_context) > 1 and budget <= 20:
+
+
+
+            result += "\n\n(summary)"
+
+
+
+        return result
+
+
+
+    def _optimize_context(
+        self,
+        ranked_context,
+        target=None,
+        budget=300,
+        profile=None
+    ):
+
+
+        result = OptimizedContext(
+
+            target=target
+
+        )
 
 
         if not ranked_context:
 
-            return ""
+            return result
 
 
 
-        output = []
+        if profile is not None:
 
-        skipped = []
+
+            mode = getattr(
+
+                profile,
+
+                "compression_mode",
+
+                "balanced"
+
+            )
+
+
+            if mode == "minimal":
+
+                budget = int(
+
+                    budget * 0.5
+
+                )
+
+
+            elif mode == "compact":
+
+                budget = int(
+
+                    budget * 0.75
+
+                )
+
+
+            elif mode == "detailed":
+
+                budget = int(
+
+                    budget * 1.25
+
+                )
+
+
 
         tokens = 0
+
+        skipped = []
 
 
 
@@ -37,25 +163,27 @@ class TokenOptimizer:
 
 
             name = getattr(
+
                 item,
+
                 "name",
+
                 str(item)
+
             )
 
 
-            text = (
-                f"{score}: {name}\n"
+            cost = self._estimate_tokens(
+
+                name
+
             )
 
 
-            estimated = self._estimate_tokens(
-                text
-            )
 
+            if (
 
-            if output and (
-
-                tokens + estimated
+                tokens + cost
 
                 >
 
@@ -63,66 +191,56 @@ class TokenOptimizer:
 
             ):
 
+
                 skipped.append(
+
                     (
+
                         item,
+
                         score
+
                     )
+
                 )
 
                 continue
 
 
 
-            if not output and estimated > budget:
+            result.add_symbol(
 
-                output.append(
-                    text
-                )
+                name,
 
-                continue
+                score
 
-
-
-            output.append(
-                text
             )
 
 
-            tokens += estimated
+            tokens += cost
 
 
 
-        result = "".join(
-            output
-        )
+        result.token_count = tokens
 
 
 
         if skipped:
 
-            result += "\n"
 
-            result += self.compressor.compress(
+            result.summary = self.compressor.compress(
+
                 skipped,
+
                 budget=max(
+
                     10,
+
                     budget // 4
+
                 )
+
             )
-
-
-
-        elif (
-
-            len(ranked_context) > 1
-
-            and budget <= 20
-
-        ):
-
-            result += "\n(summary)"
-
 
 
         return result
@@ -139,6 +257,6 @@ class TokenOptimizer:
 
             1,
 
-            len(text.split())
+            len(text.split()) + 1
 
         )

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Any
+import json
+
 
 
 @dataclass
@@ -10,8 +11,10 @@ class AgentError:
     message: str
 
 
+
 @dataclass
 class AgentErrorResponse:
+
 
     error: AgentError
 
@@ -20,7 +23,10 @@ class AgentErrorResponse:
     success: bool = False
 
 
-    def to_dict(self):
+
+    def to_dict(
+        self
+    ):
 
         return {
 
@@ -42,3 +48,17 @@ class AgentErrorResponse:
                 }
 
         }
+
+
+
+    def to_json(
+        self
+    ):
+
+        return json.dumps(
+
+            self.to_dict(),
+
+            indent=2
+
+        )

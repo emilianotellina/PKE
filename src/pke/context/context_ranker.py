@@ -20,28 +20,13 @@ class ContextRanker:
     def rank(
         self,
         context,
-        target=None,
+        target,
         graph=None,
         risks=None,
-        retrieved_documents=None
+        retrieved_documents=None,
+        profile=None
     ):
 
-
-        #
-        # Nuovo flusso ContextFusion
-        #
-
-        if self._is_fused_context(context):
-
-            return self._rank_fused(
-                context
-            )
-
-
-
-        #
-        # Vecchio flusso AIContext
-        #
 
         if graph is not None:
 
@@ -55,7 +40,9 @@ class ContextRanker:
 
                 risks,
 
-                retrieved_documents
+                retrieved_documents,
+
+                profile
 
             )
 
@@ -68,84 +55,11 @@ class ContextRanker:
 
             risks,
 
-            retrieved_documents
+            retrieved_documents,
+
+            profile
 
         )
-
-
-
-    def _is_fused_context(
-        self,
-        context
-    ):
-
-
-        if not isinstance(
-            context,
-            list
-        ):
-
-            return False
-
-
-
-        if len(context) == 0:
-
-            return False
-
-
-
-        item = context[0]
-
-
-        return (
-
-            hasattr(
-                item,
-                "symbol"
-            )
-
-            and
-
-            hasattr(
-                item,
-                "score"
-            )
-
-        )
-
-
-
-    def _rank_fused(
-        self,
-        items
-    ):
-
-
-        ranked = sorted(
-
-            items,
-
-            key=lambda item: item.score,
-
-            reverse=True
-
-        )
-
-
-        return [
-
-            (
-
-                item.symbol,
-
-                item.score
-
-            )
-
-            for item in ranked
-
-        ]
 
 
 
@@ -155,16 +69,14 @@ class ContextRanker:
         target,
         graph,
         risks=None,
-        retrieved_documents=None
+        retrieved_documents=None,
+        profile=None
     ):
 
 
         costs = self._calculate_costs(
-
             graph,
-
             target
-
         )
 
 
@@ -179,53 +91,37 @@ class ContextRanker:
 
 
                 score = self._score(
-
                     costs[symbol.name]
-
                 )
 
 
                 score = self._apply_risk_bonus(
-
                     symbol,
-
                     score,
-
-                    risks
-
+                    risks,
+                    profile
                 )
 
 
                 score = self._apply_retrieval_bonus(
-
                     symbol,
-
                     score,
-
                     retrieved_documents
-
                 )
 
 
                 result.append(
-
                     (
-
                         symbol,
-
                         score
-
                     )
-
                 )
 
 
+
         result.sort(
-
             key=lambda item: item[1],
-
             reverse=True
-
         )
 
 
@@ -241,15 +137,10 @@ class ContextRanker:
 
 
         queue = [
-
             (
-
                 0,
-
                 start
-
             )
-
         ]
 
 
@@ -286,11 +177,8 @@ class ContextRanker:
                         queue,
 
                         (
-
                             cost + weight,
-
                             target
-
                         )
 
                     )
@@ -312,14 +200,13 @@ class ContextRanker:
             return 100
 
 
+
         return max(
 
             10,
 
             int(
-
                 100 / (1 + cost)
-
             )
 
         )
@@ -331,12 +218,12 @@ class ContextRanker:
         context,
         target,
         risks=None,
-        retrieved_documents=None
+        retrieved_documents=None,
+        profile=None
     ):
 
 
         result = []
-
 
         target_symbol = None
 
@@ -375,7 +262,9 @@ class ContextRanker:
 
                         100,
 
-                        risks
+                        risks,
+
+                        profile
 
                     ),
 
@@ -401,30 +290,35 @@ class ContextRanker:
                 if called_name == target:
 
 
+                    score = self._apply_risk_bonus(
+
+                        symbol,
+
+                        80,
+
+                        risks,
+
+                        profile
+
+                    )
+
+
+                    score = self._apply_retrieval_bonus(
+
+                        symbol,
+
+                        score,
+
+                        retrieved_documents
+
+                    )
+
+
                     result.append(
 
                         (
-
                             symbol,
-
-                            self._apply_retrieval_bonus(
-
-                                symbol,
-
-                                self._apply_risk_bonus(
-
-                                    symbol,
-
-                                    80,
-
-                                    risks
-
-                                ),
-
-                                retrieved_documents
-
-                            )
-
+                            score
                         )
 
                     )
@@ -441,7 +335,8 @@ class ContextRanker:
         self,
         symbol,
         score,
-        risks
+        risks,
+        profile=None
     ):
 
 
@@ -459,37 +354,59 @@ class ContextRanker:
 
 
 
+        bonus = 0
+
+
+
         for risk in risks:
 
 
-            if name not in risk:
-
-                continue
+            if name in risk:
 
 
+                if "critical" in risk:
 
-            if "critical" in risk:
-
-                score += 20
-
-
-            elif "side effect" in risk:
-
-                score += 10
+                    bonus = 20
 
 
-            elif "dependency" in risk:
+                elif "side effect" in risk:
 
-                score += 5
+                    bonus = 10
 
 
-            else:
+                elif "dependency" in risk:
 
-                score += 5
+                    bonus = 5
+
+
+                else:
+
+                    bonus = 5
 
 
 
-        return score
+        if profile is not None and getattr(
+            profile,
+            "prioritize_risks",
+            False
+        ):
+
+
+            weight = getattr(
+                profile,
+                "risk_weight",
+                1.0
+            )
+
+
+            bonus = int(
+                bonus * weight
+            )
+
+
+
+        return score + bonus
+
 
 
     def _apply_retrieval_bonus(
@@ -513,6 +430,7 @@ class ContextRanker:
             retrieved_documents
 
         )
+
 
 
         if retrieval_score <= 0:
@@ -549,13 +467,9 @@ class ContextRanker:
             key = (
 
                 getattr(
-
                     item,
-
                     "name",
-
                     str(item)
-
                 ),
 
                 score
@@ -568,16 +482,12 @@ class ContextRanker:
                 seen.add(key)
 
                 result.append(
-
                     (
-
                         item,
-
                         score
-
                     )
-
                 )
+
 
 
         result.sort(

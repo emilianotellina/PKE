@@ -9,11 +9,20 @@ class ContextExpander:
     def expand(
         self,
         context,
-        strategy=None
+        strategy=None,
+        profile=None
     ):
 
 
         graph = ContextGraph()
+
+
+
+        #
+        # Profile has priority over strategy
+        #
+
+        configuration = profile or strategy
 
 
 
@@ -27,32 +36,32 @@ class ContextExpander:
 
 
 
-        if strategy is not None:
+        if configuration is not None:
 
 
             max_depth = getattr(
-                strategy,
+                configuration,
                 "max_depth",
                 None
             )
 
 
             expand_callers = getattr(
-                strategy,
+                configuration,
                 "expand_callers",
                 True
             )
 
 
             expand_dependencies = getattr(
-                strategy,
+                configuration,
                 "expand_dependencies",
                 True
             )
 
 
             include_side_effects = getattr(
-                strategy,
+                configuration,
                 "include_side_effects",
                 True
             )

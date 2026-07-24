@@ -18,6 +18,12 @@ class AgentResponse:
     context: Any
 
 
+    agent: str | None = None
+
+    profile: str | None = None
+
+
+
     candidates: list[Any] = field(
         default_factory=list
     )
@@ -122,6 +128,14 @@ class AgentResponse:
 
             "target":
                 self.target,
+
+
+            "agent":
+                self.agent,
+
+
+            "profile":
+                self.profile,
 
 
             "candidates":

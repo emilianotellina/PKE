@@ -24,6 +24,113 @@ class ContextCache:
 
 
 
+    def _normalize_options(
+        self,
+        options
+    ):
+
+
+        if options is None:
+
+            return ()
+
+
+
+        if isinstance(
+            options,
+            dict
+        ):
+
+            return tuple(
+
+                sorted(
+
+                    (
+
+                        str(key),
+
+                        self._normalize_value(value)
+
+                    )
+
+                    for key, value
+
+                    in options.items()
+
+                )
+
+            )
+
+
+        return self._normalize_value(
+            options
+        )
+
+
+
+    def _normalize_value(
+        self,
+        value
+    ):
+
+
+        if hasattr(
+            value,
+            "name"
+        ):
+
+            return value.name
+
+
+
+        if isinstance(
+            value,
+            dict
+        ):
+
+            return tuple(
+
+                sorted(
+
+                    (
+
+                        str(key),
+
+                        self._normalize_value(val)
+
+                    )
+
+                    for key, val
+
+                    in value.items()
+
+                )
+
+            )
+
+
+        if isinstance(
+            value,
+            list
+        ):
+
+            return tuple(
+
+                self._normalize_value(item)
+
+                for item
+
+                in value
+
+            )
+
+
+        return str(
+            value
+        )
+
+
+
     def _key(
         self,
         fingerprint,
@@ -32,13 +139,26 @@ class ContextCache:
         options
     ):
 
+
+        normalized_options = self._normalize_options(
+            options
+        )
+
+
         return str(
+
             (
+
                 fingerprint,
+
                 task,
+
                 target,
-                options
+
+                normalized_options
+
             )
+
         )
 
 

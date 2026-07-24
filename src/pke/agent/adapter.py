@@ -11,13 +11,17 @@ class PKEAgentAdapter:
 
     def __init__(
         self,
-        project
+        project,
+        profile=None
     ):
 
         self.project = project
 
+        self.profile = profile
+
         self.api = AgentAPI(
-            project
+            project,
+            profile=profile
         )
 
         self.cache = ContextCache()
