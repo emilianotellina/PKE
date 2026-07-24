@@ -5,13 +5,57 @@ from .context_graph import ContextGraph
 class ContextExpander:
 
 
+
     def expand(
         self,
-        context
+        context,
+        strategy=None
     ):
 
 
         graph = ContextGraph()
+
+
+
+        max_depth = None
+
+        expand_callers = True
+
+        expand_dependencies = True
+
+        include_side_effects = True
+
+
+
+        if strategy is not None:
+
+
+            max_depth = getattr(
+                strategy,
+                "max_depth",
+                None
+            )
+
+
+            expand_callers = getattr(
+                strategy,
+                "expand_callers",
+                True
+            )
+
+
+            expand_dependencies = getattr(
+                strategy,
+                "expand_dependencies",
+                True
+            )
+
+
+            include_side_effects = getattr(
+                strategy,
+                "include_side_effects",
+                True
+            )
 
 
 
@@ -51,15 +95,18 @@ class ContextExpander:
                 # Reverse relation
                 #
 
-                graph.add_relation(
+                if expand_callers:
 
-                    call,
 
-                    "called_by",
+                    graph.add_relation(
 
-                    symbol.name
+                        call,
 
-                )
+                        "called_by",
+
+                        symbol.name
+
+                    )
 
 
 
@@ -67,18 +114,21 @@ class ContextExpander:
             # Existing called_by
             #
 
-            for caller in symbol.called_by:
+            if expand_callers:
 
 
-                graph.add_relation(
+                for caller in symbol.called_by:
 
-                    symbol.name,
 
-                    "called_by",
+                    graph.add_relation(
 
-                    caller
+                        symbol.name,
 
-                )
+                        "called_by",
+
+                        caller
+
+                    )
 
 
 
@@ -86,29 +136,32 @@ class ContextExpander:
             # Dependencies
             #
 
-            for dependency in symbol.dependencies:
+            if expand_dependencies:
 
 
-                dependency_name = getattr(
-
-                    dependency,
-
-                    "name",
-
-                    str(dependency)
-
-                )
+                for dependency in symbol.dependencies:
 
 
-                graph.add_relation(
+                    dependency_name = getattr(
 
-                    symbol.name,
+                        dependency,
 
-                    "depends_on",
+                        "name",
 
-                    dependency_name
+                        str(dependency)
 
-                )
+                    )
+
+
+                    graph.add_relation(
+
+                        symbol.name,
+
+                        "depends_on",
+
+                        dependency_name
+
+                    )
 
 
 
@@ -116,18 +169,21 @@ class ContextExpander:
             # Side effects
             #
 
-            for effect in symbol.side_effects:
+            if include_side_effects:
 
 
-                graph.add_relation(
+                for effect in symbol.side_effects:
 
-                    symbol.name,
 
-                    "side_effect",
+                    graph.add_relation(
 
-                    effect
+                        symbol.name,
 
-                )
+                        "side_effect",
+
+                        effect
+
+                    )
 
 
 

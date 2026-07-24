@@ -3,6 +3,7 @@ from .context_ranker import ContextRanker
 from .token_optimizer import TokenOptimizer
 from .context_formatter import ContextFormatter
 from .context_expander import ContextExpander
+from .context_fusion import ContextFusion
 from .optimized_context import OptimizedContext
 
 
@@ -16,6 +17,8 @@ class ContextEngine:
         self.builder = ContextBuilder()
 
         self.expander = ContextExpander()
+
+        self.fusion = ContextFusion()
 
         self.ranker = ContextRanker()
 
@@ -33,7 +36,9 @@ class ContextEngine:
         dependency_graph=None,
         metrics=None,
         risks=None,
-        budget=300
+        retrieved_documents=None,
+        budget=300,
+        strategy=None
     ):
 
 
@@ -47,24 +52,46 @@ class ContextEngine:
 
 
         graph = self.expander.expand(
-            context
+            context,
+            strategy
+        )
+
+
+
+        fused_context = self.fusion.fuse(
+
+            context,
+
+            graph=graph,
+
+            risks=risks,
+
+            retrieval_context=retrieved_documents,
+
+            metrics=metrics
+
         )
 
 
 
         ranked = self.ranker.rank(
-            context,
-            target,
-            graph=graph,
-            risks=risks
+
+            fused_context,
+
+            target
+
         )
 
 
 
         optimized = self._optimize(
+
             ranked,
+
             target,
+
             budget
+
         )
 
 
@@ -75,7 +102,21 @@ class ContextEngine:
 
 
 
+        if retrieved_documents:
+
+
+            prompt = self._append_retrieved_documents(
+
+                prompt,
+
+                retrieved_documents
+
+            )
+
+
+
         return {
+
 
             "target":
 
@@ -96,9 +137,13 @@ class ContextEngine:
                         "symbol":
 
                             getattr(
+
                                 item,
+
                                 "name",
+
                                 str(item)
+
                             ),
 
                         "score":
@@ -107,9 +152,22 @@ class ContextEngine:
 
                     }
 
-                    for item,score in ranked
+                    for item, score in ranked
 
                 ],
+
+
+
+            "fusion":
+
+                [
+
+                    item.to_dict()
+
+                    for item in fused_context
+
+                ],
+
 
 
             "structured":
@@ -117,16 +175,91 @@ class ContextEngine:
                 context.to_dict(),
 
 
+
             "prompt":
 
                 prompt,
 
 
+
             "graph":
 
-                graph.nodes
+                graph.nodes,
+
+
+
+            "retrieved_documents":
+
+                retrieved_documents
+
 
         }
+
+
+    def _append_retrieved_documents(
+        self,
+        prompt,
+        documents
+    ):
+
+        section = [
+
+            "\n",
+
+            "## Retrieved Knowledge\n"
+
+        ]
+
+
+        for document in documents:
+
+
+            if isinstance(
+                document,
+                dict
+            ):
+
+
+                name = document.get(
+
+                    "name",
+
+                    document.get(
+
+                        "path",
+
+                        document.get(
+
+                            "file",
+
+                            "unknown"
+
+                        )
+
+                    )
+
+                )
+
+
+            else:
+
+                name = str(
+                    document
+                )
+
+
+
+            section.append(
+
+                f"- {name}\n"
+
+            )
+
+
+
+        return prompt + "".join(
+            section
+        )
 
 
 
@@ -147,7 +280,7 @@ class ContextEngine:
 
 
 
-        for item,score in ranked:
+        for item, score in ranked:
 
 
             name = getattr(
@@ -193,13 +326,17 @@ class ContextEngine:
 
         if len(result.symbols) < len(ranked):
 
+
             result.summary = self.optimizer.compressor.compress(
 
                 ranked[len(result.symbols):],
 
                 budget=max(
+
                     10,
+
                     budget // 4
+
                 )
 
             )

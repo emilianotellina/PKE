@@ -1,3 +1,7 @@
+from .retrieval_context import RetrievalContext
+
+
+
 class KnowledgeRetriever:
 
 
@@ -24,9 +28,39 @@ class KnowledgeRetriever:
         )
 
 
-        return results[
-            :self.max_results
-        ]
+        context = RetrievalContext(
+            query=query
+        )
+
+
+        for item in results[:self.max_results]:
+
+            context.add(
+
+                item,
+
+                score=item.get(
+                    "score"
+                )
+                if isinstance(
+                    item,
+                    dict
+                )
+                else None,
+
+                source=item.get(
+                    "source"
+                )
+                if isinstance(
+                    item,
+                    dict
+                )
+                else None
+
+            )
+
+
+        return context
 
 
 
@@ -36,7 +70,7 @@ class KnowledgeRetriever:
     ):
 
 
-        results = self.retrieve(
+        context = self.retrieve(
             query
         )
 
@@ -47,6 +81,15 @@ class KnowledgeRetriever:
 
             for item
 
-            in results
+            in context.documents
+
+            if isinstance(
+                item,
+                dict
+            )
+
+            and
+
+            "content" in item
 
         ]
